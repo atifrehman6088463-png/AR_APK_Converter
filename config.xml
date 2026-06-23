@@ -26,6 +26,9 @@
     <preference name="AndroidWindowSplashScreenAnimatedIcon" value="www/logo.png" />
     <preference name="AndroidWindowSplashScreenBackground" value="#FFFFFF" />
 
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+    <preference name="AndroidExtraFilesystems" value="files,cache, sdcard, cache-external, files-external" />
+
     <platform name="android">
         <allow-intent href="market:*" />
         
@@ -45,6 +48,11 @@
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
         </config-file>
+        
+        <edit-config target="/manifest/application" mode="merge" id="applicationLegacyStorage">
+            <application android:requestLegacyExternalStorage="true" />
+        </edit-config>
     </platform>
 </widget>
