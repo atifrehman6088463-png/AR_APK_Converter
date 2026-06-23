@@ -3,8 +3,7 @@ name: Android CI Build
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,20 +18,14 @@ jobs:
       with:
         java-version: '17'
         distribution: 'zulu'
-        cache: gradle
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
 
-    - name: Install Cordova and Dependencies
-      run: |
-        npm install -g cordova
-        npm install
-
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+    - name: Install Cordova
+      run: npm install -g cordova
 
     - name: Add Android Platform and Plugins
       run: |
