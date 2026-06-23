@@ -55,6 +55,8 @@ jobs:
       - name: Build Android APK
         run: |
           cd my-app
+          cordova platform rm android
+          cordova platform add android
           cordova build android
 
       - name: Upload APK Artifact
