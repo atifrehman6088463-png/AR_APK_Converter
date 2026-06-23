@@ -28,18 +28,20 @@ jobs:
 
       - name: Inject Custom Web Files & Branding
         run: |
-          # Copy index.html
-          if [ -f index.html ]; then cp index.html my-app/www/index.html; fi
-          # Copy assets
+          # 1. Copy index.html to Cordova www folder
+          if [ -f index.html ]; then
+            cp index.html my-app/www/index.html
+          fi
+          
+          # 2. Copy CSS and JS files if they exist
           cp -r *.css my-app/www/ 2>/dev/null || true
           cp -r *.js my-app/www/ 2>/dev/null || true
-          # Add logo if exists
+          
+          # 3. Inject logo.png as app main icon if uploaded
           if [ -f logo.png ]; then
             cp logo.png my-app/www/logo.png
             sed -i '/<\/widget>/i \    <icon src="www/logo.png" \/>' my-app/config.xml
           fi
-          # SAFE PERMISSION ADDITION (This will not break the build)
-          sed -i '/<\/widget>/i \    <platform name="android">\n        <config-file target="AndroidManifest.xml" parent="/*">\n            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n        </config-file>\n    </platform>' my-app/config.xml
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -60,3 +62,4 @@ jobs:
         with:
           name: Android-APK
           path: my-app/platforms/android/app/build/outputs/apk/**/*.apk
+          
