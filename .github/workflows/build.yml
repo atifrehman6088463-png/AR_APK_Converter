@@ -26,13 +26,13 @@ jobs:
           cd my-app
           cordova platform add android
 
-      # یہاں ہم صرف پی ڈی ایف ڈاؤن لوڈ (File) کا پلگ ان انسٹال کر رہے ہیں
-      - name: Install Cordova File Plugin
+      # یہاں ہم اسٹوریج اور فائل میجمنٹ کا پلگ ان انسٹال کر رہے ہیں
+      - name: Install Cordova File Plugins
         run: |
           cd my-app
           cordova plugin add cordova-plugin-file
 
-      - name: Inject Web File, Branding & Permissions
+      - name: Inject Web File, Branding & Config
         run: |
           # 1. Copy your single index.html to Cordova www folder
           if [ -f index.html ]; then
@@ -53,11 +53,13 @@ jobs:
             sed -i '/<\/widget>/i \    <preference name="SplashScreenDelay" value="3000" />' my-app/config.xml
           fi
 
-          # 4. Inject Android Permissions into config.xml
-          sed -i '/<\/widget>/i \    <config-file target="AndroidManifest.xml" parent="/*">' my-app/config.xml
-          sed -i '/<\/widget>/i \        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />' my-app/config.xml
-          sed -i '/<\/widget>/i \        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />' my-app/config.xml
-          sed -i '/<\/widget>/i \    </config-file>' my-app/config.xml
+          # 4. Correctly Inject Android Storage Permissions with custom config block
+          sed -i '/<\/widget>/i \    <platform name="android">' my-app/config.xml
+          sed -i '/<\/widget>/i \        <config-file target="AndroidManifest.xml" parent="/*">' my-app/config.xml
+          sed -i '/<\/widget>/i \            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />' my-app/config.xml
+          sed -i '/<\/widget>/i \            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />' my-app/config.xml
+          sed -i '/<\/widget>/i \        </config-file>' my-app/config.xml
+          sed -i '/<\/widget>/i \    </platform>' my-app/config.xml
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
