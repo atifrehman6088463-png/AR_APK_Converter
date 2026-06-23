@@ -37,6 +37,7 @@ jobs:
           cordova platform add android
           cordova plugin add cordova-plugin-file
           cordova plugin add cordova-plugin-splashscreen
+          cordova plugin add cordova-plugin-printer
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
