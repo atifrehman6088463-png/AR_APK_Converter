@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '20'
 
       - name: Install Cordova
         run: npm install -g cordova
@@ -28,19 +28,15 @@ jobs:
 
       - name: Inject Custom Web Files & Branding
         run: |
-          # Copy index.html
+          # کسٹم کنفگ فائل کو پروجیکٹ میں کاپی کرنا
+          if [ -f config.xml ]; then
+            cp config.xml my-app/config.xml
+          fi
+          # ویب فائلیں کاپی کرنا
           if [ -f index.html ]; then cp index.html my-app/www/index.html; fi
-          # Copy assets
           cp -r *.css my-app/www/ 2>/dev/null || true
           cp -r *.js my-app/www/ 2>/dev/null || true
-          # Add logo if exists
-          if [ -f logo.png ]; then
-            cp logo.png my-app/www/logo.png
-            sed -i '/<\/widget>/i \    <icon src="www/logo.png" \/>' my-app/config.xml
-          fi
-          
-          # Inject Permissions directly into Cordova config.xml structure safely
-          sed -i '/<\/widget>/i \    <platform name="android">\n        <config-file target="AndroidManifest.xml" parent="/*">\n            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n        </config-file>\n    </platform>' my-app/config.xml
+          if [ -f logo.png ]; then cp logo.png my-app/www/logo.png; fi
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
