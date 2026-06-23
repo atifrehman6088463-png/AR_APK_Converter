@@ -25,14 +25,21 @@ jobs:
           cordova create my-app com.arappcreator.sellerpro "Seller Pro"
           cd my-app
           cordova platform add android
-          # Adding storage permissions directly to config.xml
-          sed -i '/<\/widget>/i \    <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application" xmlns:android="http://schemas.android.com/apk/res/android">\n        <application android:requestLegacyExternalStorage="true" />\n    </edit-config>\n    <config-file target="AndroidManifest.xml" parent="/*">\n        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    </config-file>' config.xml
 
       - name: Inject Custom Web Files & Branding
         run: |
-          if [ -f index.html ]; then cp index.html my-app/www/index.html; fi
+          # Copy our custom config.xml
+          if [ -f config.xml ]; then
+            cp config.xml my-app/config.xml
+          fi
+          # Copy index.html
+          if [ -f index.html ]; then
+            cp index.html my-app/www/index.html
+          fi
+          # Copy CSS and JS
           cp -r *.css my-app/www/ 2>/dev/null || true
           cp -r *.js my-app/www/ 2>/dev/null || true
+          # Copy logo
           if [ -f logo.png ]; then
             cp logo.png my-app/www/logo.png
             sed -i '/<\/widget>/i \    <icon src="www/logo.png" \/>' my-app/config.xml
