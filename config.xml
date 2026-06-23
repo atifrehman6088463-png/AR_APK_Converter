@@ -6,9 +6,14 @@
     
     <content src="index.html" />
     <access origin="*" />
+    
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
-    <allow-navigation href="*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <allow-intent href="whatsapp:*" />
 
     <icon src="www/logo.png" />
 
@@ -17,10 +22,26 @@
     <preference name="AutoHideSplashScreen" value="true" />
     <preference name="FadeSplashScreen" value="true" />
     <preference name="FadeSplashScreenDuration" value="300" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+    <preference name="AndroidWindowSplashScreenAnimatedIcon" value="www/logo.png" />
+    <preference name="AndroidWindowSplashScreenBackground" value="#FFFFFF" />
 
     <platform name="android">
         <allow-intent href="market:*" />
         
+        <queries>
+            <intent>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="whatsapp" />
+            </intent>
+            <intent>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="wa.me" />
+            </intent>
+        </queries>
+
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
