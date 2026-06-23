@@ -26,33 +26,38 @@ jobs:
           cd my-app
           cordova platform add android
 
-      # یہاں پر ہم ضروری Cordova پلگ انز انسٹال کر رہے ہیں
-      - name: Install Cordova Storage & Permission Plugins
+      # یہاں ہم صرف پی ڈی ایف ڈاؤن لوڈ (File) کا پلگ ان انسٹال کر رہے ہیں
+      - name: Install Cordova File Plugin
         run: |
           cd my-app
           cordova plugin add cordova-plugin-file
-          cordova plugin add cordova-plugin-android-permissions
 
-      - name: Inject Custom Web Files, Branding & Permissions
+      - name: Inject Web File, Branding & Permissions
         run: |
-          # 1. Copy index.html to Cordova www folder
+          # 1. Copy your single index.html to Cordova www folder
           if [ -f index.html ]; then
             cp index.html my-app/www/index.html
           fi
           
-          # 2. Copy CSS and JS files if they exist
-          cp -r *.css my-app/www/ 2>/dev/null || true
-          cp -r *.js my-app/www/ 2>/dev/null || true
-          
-          # 3. Inject logo.png as app main icon if uploaded
+          # 2. Inject logo.png as app main icon if uploaded
           if [ -f logo.png ]; then
             cp logo.png my-app/www/logo.png
-            sed -i '/<\/widget>/i \    <icon src="www/logo.png" \/>' my-app/config.xml
+            sed -i '/<\/widget>/i \    <icon src="www/logo.png" />' my-app/config.xml
+          fi
+
+          # 3. Inject splash.png as Custom Splash Screen if uploaded
+          if [ -f splash.png ]; then
+            cp splash.png my-app/www/splash.png
+            sed -i '/<\/widget>/i \    <preference name="SplashScreen" value="www/splash.png" />' my-app/config.xml
+            sed -i '/<\/widget>/i \    <preference name="AutoHideSplashScreen" value="true" />' my-app/config.xml
+            sed -i '/<\/widget>/i \    <preference name="SplashScreenDelay" value="3000" />' my-app/config.xml
           fi
 
           # 4. Inject Android Permissions into config.xml
-          # یہ کوڈ اینڈرائیڈ کو بتائے گا کہ ایپ کو اسٹوریج استعمال کرنے کی اجازت چاہیے، جس سے موبائل سیٹنگز میں پرمیشن کا آپشن ا جائے گا۔
-          sed -i '/<\/widget>/i \    <config-file target="AndroidManifest.xml" parent="/*">\n        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    </config-file>' my-app/config.xml
+          sed -i '/<\/widget>/i \    <config-file target="AndroidManifest.xml" parent="/*">' my-app/config.xml
+          sed -i '/<\/widget>/i \        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />' my-app/config.xml
+          sed -i '/<\/widget>/i \        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />' my-app/config.xml
+          sed -i '/<\/widget>/i \    </config-file>' my-app/config.xml
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
