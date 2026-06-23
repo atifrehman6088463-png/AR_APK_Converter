@@ -25,33 +25,38 @@ jobs:
           cordova create my-app com.arappcreator.sellerpro "Seller Pro"
           cd my-app
           cordova platform add android
-
-      # یہاں ہم اسٹوریج اور فائل میجمنٹ کا پلگ ان انسٹال کر رہے ہیں (یہ خود ہی پرمیشنز سیٹ کر دے گا)
-      - name: Install Cordova File Plugins
-        run: |
-          cd my-app
+          # ضروری پلگ انز انسٹال کر رہے ہیں
           cordova plugin add cordova-plugin-file
+          cordova plugin add cordova-plugin-splashscreen
 
-      - name: Inject Web File, Branding & Icons
+      - name: Setup Web Files & Branding
         run: |
-          # 1. Copy your single index.html to Cordova www folder
-          if [ -f index.html ]; then
-            cp index.html my-app/www/index.html
-          fi
+          # فائلوں کو صحیح جگہ کاپی کرنا
+          cp index.html my-app/www/index.html
+          cp logo.png my-app/www/logo.png
+          cp splash.png my-app/www/splash.png
           
-          # 2. Inject logo.png as app main icon if uploaded
-          if [ -f logo.png ]; then
-            cp logo.png my-app/www/logo.png
-            sed -i '/<\/widget>/i \    <icon src="www/logo.png" />' my-app/config.xml
-          fi
-
-          # 3. Inject splash.png as Custom Splash Screen if uploaded
-          if [ -f splash.png ]; then
-            cp splash.png my-app/www/splash.png
-            sed -i '/<\/widget>/i \    <preference name="SplashScreen" value="www/splash.png" />' my-app/config.xml
-            sed -i '/<\/widget>/i \    <preference name="AutoHideSplashScreen" value="true" />' my-app/config.xml
-            sed -i '/<\/widget>/i \    <preference name="SplashScreenDelay" value="3000" />' my-app/config.xml
-          fi
+          cd my-app
+          
+          # 1. اینڈرائیڈ نیم اسپیس (xmlns:android) کو کنفگ فائل میں انجیکٹ کرنا تاکہ پرمیشنز کام کریں
+          sed -i 's/<widget/<widget xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"/' config.xml
+          
+          # 2. پرانے ڈیفالٹ آئیکنز ہٹا کر اپنا لوگو سیٹ کرنا
+          sed -i '/<icon src/d' config.xml
+          sed -i '/<\/widget>/i \    <icon src="www/logo.png" />' config.xml
+          
+          # 3. اسپلش اسکرین کی بالکل درست کنفیگریشن
+          sed -i '/<\/widget>/i \    <preference name="SplashScreen" value="www\/splash.png" />' config.xml
+          sed -i '/<\/widget>/i \    <preference name="SplashScreenDelay" value="3000" />' config.xml
+          sed -i '/<\/widget>/i \    <preference name="AutoHideSplashScreen" value="true" />' config.xml
+          
+          # 4. پی ڈی ایف ڈاؤن لوڈ کے لیے اینڈرائیڈ اسٹوریج پرمیشنز لکھنا
+          sed -i '/<\/widget>/i \    <platform name="android">' config.xml
+          sed -i '/<\/widget>/i \        <config-file target="AndroidManifest.xml" parent="/*">' config.xml
+          sed -i '/<\/widget>/i \            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" \/>' config.xml
+          sed -i '/<\/widget>/i \            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" \/>' config.xml
+          sed -i '/<\/widget>/i \        <\/config-file>' config.xml
+          sed -i '/<\/widget>/i \    <\/platform>' config.xml
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -72,4 +77,3 @@ jobs:
         with:
           name: Android-APK
           path: my-app/platforms/android/app/build/outputs/apk/**/*.apk
-          
