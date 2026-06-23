@@ -1,4 +1,4 @@
-Name: Build Android APK
+name: Build Android APK
 on:
   push:
     branches:
@@ -26,7 +26,6 @@ jobs:
           
       - name: Copy Custom Config & Web Files
         run: |
-          # ہماری اپنی بنائی ہوئی کنفگ فائل اور امیجز کو کارڈووا پروجیکٹ میں کاپی کرنا
           cp config.xml my-app/config.xml
           cp index.html my-app/www/index.html
           cp logo.png my-app/www/logo.png
@@ -48,7 +47,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # یہاں ہم نے وہ پی ڈی ایف والی پرمیشن زبردستی اینڈرائیڈ کی مین فائل میں انجیکٹ کر دی ہے
       - name: Inject Legacy Storage Permission
         run: |
           sed -i 's/<application/<application android:requestLegacyExternalStorage="true"/' my-app/platforms/android/app/src/main/AndroidManifest.xml
