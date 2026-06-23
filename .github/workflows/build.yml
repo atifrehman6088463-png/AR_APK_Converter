@@ -26,7 +26,14 @@ jobs:
           cd my-app
           cordova platform add android
 
-      - name: Inject Custom Web Files & Branding
+      # یہاں پر ہم ضروری Cordova پلگ انز انسٹال کر رہے ہیں
+      - name: Install Cordova Storage & Permission Plugins
+        run: |
+          cd my-app
+          cordova plugin add cordova-plugin-file
+          cordova plugin add cordova-plugin-android-permissions
+
+      - name: Inject Custom Web Files, Branding & Permissions
         run: |
           # 1. Copy index.html to Cordova www folder
           if [ -f index.html ]; then
@@ -42,6 +49,10 @@ jobs:
             cp logo.png my-app/www/logo.png
             sed -i '/<\/widget>/i \    <icon src="www/logo.png" \/>' my-app/config.xml
           fi
+
+          # 4. Inject Android Permissions into config.xml
+          # یہ کوڈ اینڈرائیڈ کو بتائے گا کہ ایپ کو اسٹوریج استعمال کرنے کی اجازت چاہیے، جس سے موبائل سیٹنگز میں پرمیشن کا آپشن ا جائے گا۔
+          sed -i '/<\/widget>/i \    <config-file target="AndroidManifest.xml" parent="/*">\n        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    </config-file>' my-app/config.xml
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
