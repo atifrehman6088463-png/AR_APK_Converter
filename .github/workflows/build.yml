@@ -15,19 +15,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # مستحکم نوڈ ورژن
+          node-version: '18'
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11' # اینڈرائیڈ 11/12 بلڈز کے لیے سب سے بہترین اور مستحکم جے ڈی کے
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          java-version: '17' # یہ کورڈووا کے نئے ورژنز کے لیے بالکل پرفیکٹ ہے
 
       - name: Install Cordova
-        run: npm install -g cordova@12.0.0 # مخصوص مستحکم ورژن
+        run: npm install -g cordova
 
       - name: Create Cordova Project
         run: |
@@ -41,21 +38,24 @@ jobs:
           cp splash.png my-app/www/splash.png || true
 
       - name: Add Android Platform & Plugins
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk # گٹ ہب کا اپنا آفیشل ایس ڈی کے پاتھ
         run: |
           cd my-app
-          cordova platform add android@11.0.0 --save # ورژن کو لاک کر دیا تاکہ گریڈل کریش نہ ہو
+          cordova platform add android
           cordova plugin add cordova-plugin-file --save
           cordova plugin add cordova-plugin-splashscreen --save
           cordova plugin add cordova-plugin-printer --save
 
       - name: Build Android APK
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
           cd my-app
-          cordova build android --debug --verbose
+          cordova build android --debug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Android-APK
-          path: my-app/platforms/android/app/build/outputs/apk/
-          if-no-files-found: error
+          path: my-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
