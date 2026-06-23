@@ -23,40 +23,21 @@ jobs:
       - name: Create Cordova Project
         run: |
           cordova create my-app com.arappcreator.sellerpro "Seller Pro"
-          cd my-app
-          cordova platform add android
-          # ضروری پلگ انز انسٹال کر رہے ہیں
-          cordova plugin add cordova-plugin-file
-          cordova plugin add cordova-plugin-splashscreen
-
-      - name: Setup Web Files & Branding
+          
+      - name: Copy Custom Config & Web Files
         run: |
-          # فائلوں کو صحیح جگہ کاپی کرنا
+          # ہماری اپنی بنائی ہوئی کنفگ فائل اور امیجز کو کارڈووا پروجیکٹ میں کاپی کرنا
+          cp config.xml my-app/config.xml
           cp index.html my-app/www/index.html
           cp logo.png my-app/www/logo.png
           cp splash.png my-app/www/splash.png
-          
+
+      - name: Add Android Platform & Plugins
+        run: |
           cd my-app
-          
-          # 1. اینڈرائیڈ نیم اسپیس (xmlns:android) کو کنفگ فائل میں انجیکٹ کرنا تاکہ پرمیشنز کام کریں
-          sed -i 's/<widget/<widget xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"/' config.xml
-          
-          # 2. پرانے ڈیفالٹ آئیکنز ہٹا کر اپنا لوگو سیٹ کرنا
-          sed -i '/<icon src/d' config.xml
-          sed -i '/<\/widget>/i \    <icon src="www/logo.png" />' config.xml
-          
-          # 3. اسپلش اسکرین کی بالکل درست کنفیگریشن
-          sed -i '/<\/widget>/i \    <preference name="SplashScreen" value="www\/splash.png" />' config.xml
-          sed -i '/<\/widget>/i \    <preference name="SplashScreenDelay" value="3000" />' config.xml
-          sed -i '/<\/widget>/i \    <preference name="AutoHideSplashScreen" value="true" />' config.xml
-          
-          # 4. پی ڈی ایف ڈاؤن لوڈ کے لیے اینڈرائیڈ اسٹوریج پرمیشنز لکھنا
-          sed -i '/<\/widget>/i \    <platform name="android">' config.xml
-          sed -i '/<\/widget>/i \        <config-file target="AndroidManifest.xml" parent="/*">' config.xml
-          sed -i '/<\/widget>/i \            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" \/>' config.xml
-          sed -i '/<\/widget>/i \            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" \/>' config.xml
-          sed -i '/<\/widget>/i \        <\/config-file>' config.xml
-          sed -i '/<\/widget>/i \    <\/platform>' config.xml
+          cordova platform add android
+          cordova plugin add cordova-plugin-file
+          cordova plugin add cordova-plugin-splashscreen
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
