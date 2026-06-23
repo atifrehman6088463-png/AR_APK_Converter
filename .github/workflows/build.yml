@@ -1,4 +1,4 @@
-name: Build Android APK
+Name: Build Android APK
 on:
   push:
     branches:
@@ -47,6 +47,11 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      # یہاں ہم نے وہ پی ڈی ایف والی پرمیشن زبردستی اینڈرائیڈ کی مین فائل میں انجیکٹ کر دی ہے
+      - name: Inject Legacy Storage Permission
+        run: |
+          sed -i 's/<application/<application android:requestLegacyExternalStorage="true"/' my-app/platforms/android/app/src/main/AndroidManifest.xml
 
       - name: Build Android APK
         run: |
