@@ -26,25 +26,23 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Create Cordova Structure
+      - name: Create Cordova Project
         run: |
           cordova create my-app com.arappcreator.sellerpro "Seller Pro"
           
-      - name: Force Sync Configuration and Web Files
+      - name: Force Sync Custom Config and Web Files
         run: |
-          # یہاں ہم پرانی فائلز کو زبردستی اپنی اصل فائلوں سے بدل رہے ہیں
           rm -f my-app/config.xml
           cp config.xml my-app/config.xml
           cp index.html my-app/www/index.html
           cp logo.png my-app/www/logo.png || true
           cp splash.png my-app/www/splash.png || true
 
-      - name: Build Android Platform
+      - name: Add Android Platform & Essential Plugins
         run: |
           cd my-app
-          # پہلے پلیٹ فارم ایڈ ہوگا جو آپ کی config.xml کو پڑھے گا
+          cordova plugin add cordova-plugin-custom-config --save
           cordova platform add android
-          # اب پرنٹنگ پلگ ان اس کنفیگریشن کے مطابق انسٹال ہوگا
           cordova plugin add cordova-plugin-printer --save
 
       - name: Compile APK
