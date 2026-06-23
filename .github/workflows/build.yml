@@ -34,7 +34,7 @@ jobs:
       - name: Add Android Platform & Plugins
         run: |
           cd my-app
-          cordova platform add android@latest
+          cordova platform add android
           cordova plugin add cordova-plugin-file
           cordova plugin add cordova-plugin-splashscreen
           cordova plugin add cordova-plugin-printer
@@ -55,8 +55,7 @@ jobs:
       - name: Build Android APK
         run: |
           cd my-app
-          cd platforms/android
-          ./gradlew clean assembleDebug
+          cordova build android
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
