@@ -15,13 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+          node-version: '20'
 
       - name: Install Cordova
         run: npm install -g cordova
@@ -29,33 +23,45 @@ jobs:
       - name: Create Cordova Project
         run: |
           cordova create my-app com.arappcreator.sellerpro "Seller Pro"
-          
-      - name: Force Sync Custom Config and Web Files
-        run: |
-          rm -f my-app/config.xml
-          cp config.xml my-app/config.xml
-          cp index.html my-app/www/index.html
-          cp logo.png my-app/www/logo.png || true
-          cp splash.png my-app/www/splash.png || true
-
-      - name: Add Android Platform & Essential Plugins
-        run: |
           cd my-app
-          cordova plugin add cordova-plugin-custom-config --save
           cordova platform add android
-          cordova plugin add cordova-plugin-printer --save
 
-      - name: Compile APK
+      - name: Inject Custom Web Files & Branding
+        run: |
+          # Copy our custom config.xml if exists
+          if [ -f config.xml ]; then
+            cp config.xml my-app/config.xml
+          fi
+          # Copy index.html
+          if [ -f index.html ]; then
+            cp index.html my-app/www/index.html
+          fi
+          # Copy CSS and JS
+          cp -r *.css my-app/www/ 2>/dev/null || true
+          cp -r *.js my-app/www/ 2>/dev/null || true
+          # Copy logo
+          if [ -f logo.png ]; then
+            cp logo.png my-app/www/logo.png
+            sed -i '/<\/widget>/i \    <icon src="www/logo.png" \/>' my-app/config.xml
+          fi
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Android APK
         run: |
           cd my-app
-          cordova build android --debug
+          cordova build android
 
-      - name: Locate and Move APK
-        run: |
-          find my-app/platforms/android/ -name "*.apk" -exec cp {} ./seller-pro-debug.apk \;
-
-      - name: Upload Finished APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Android-APK
-          path: seller-pro-debug.apk
+          path: my-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          
