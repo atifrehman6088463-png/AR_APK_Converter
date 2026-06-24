@@ -23,7 +23,6 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      # اوبنٹو کے اپنے اینڈرائیڈ ٹولز کا راستہ (Path) سسٹم کو بتانا
       - name: Export Android SDK Env Variables
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
@@ -34,11 +33,12 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
+      # 🌟 تبدیل شدہ حصہ: اب یہ پرانے پلگ انز کے بغیر بالکل صاف اور نیا اینڈرائیڈ پروجیکٹ بنائے گا
       - name: Create Cordova Project
         run: |
           cordova create my-app com.arappcreator.sellerpro "Seller Pro"
           cd my-app
-          cordova platform add android
+          cordova platform add android --save
 
       - name: Inject Custom Web Files & Branding
         run: |
