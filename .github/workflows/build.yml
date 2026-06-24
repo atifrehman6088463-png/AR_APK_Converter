@@ -15,7 +15,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '18.x'
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '11'
 
       - name: Install Cordova
         run: npm install -g cordova
@@ -25,11 +31,6 @@ jobs:
           cordova create my-app com.arappcreator.sellerpro "Seller Pro"
           cd my-app
           cordova platform add android
-
-      - name: Install Safe Printer Plugin
-        run: |
-          cd my-app
-          cordova plugin add https://github.com/katzer/cordova-plugin-printer.git --save
 
       - name: Inject Custom Web Files & Branding
         run: |
@@ -41,20 +42,11 @@ jobs:
           cp -r *.js my-app/www/ 2>/dev/null || true
           if [ -f logo.png ]; then cp logo.png my-app/www/logo.png; fi
 
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '11'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Build Android APK
         run: |
           cd my-app
           cordova build android
-          
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
