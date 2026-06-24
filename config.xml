@@ -25,6 +25,10 @@
     <preference name="ShowSplashScreenSpinner" value="false" />
     <preference name="AndroidWindowSplashScreenAnimatedIcon" value="www/logo.png" />
     <preference name="AndroidWindowSplashScreenBackground" value="#FFFFFF" />
+    
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+
+    <plugin name="cordova-plugin-printer" spec="https://github.com/katzer/cordova-plugin-printer.git" />
 
     <platform name="android">
         <allow-intent href="market:*" />
@@ -47,6 +51,7 @@
         </edit-config>
 
         <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
