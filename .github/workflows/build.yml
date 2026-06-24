@@ -1,65 +1,66 @@
-name: Build Android APK
+Name: Build Android APK
 on:
-  push:
-    branches:
+  Push:
+    Branches:
       - main
-  workflow_dispatch:
+  Workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
+Jobs:
+  Build:
+    Runs-on: ubuntu-latest
+    Steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        Uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
+        Uses: actions/setup-node@v4
+        With:
+          Node-version: '20.x'
 
       - name: Install Cordova
-        run: npm install -g cordova
+        Run: npm install -g cordova
 
       - name: Create Cordova Project
-        run: |
-          cordova create my-app com.arappcreator.sellerpro "Seller Pro"
-          cd my-app
-          cordova platform add android
-
-      - name: Inject Custom Web Files & Branding
-        run: |
-          # Copy custom config.xml
-          if [ -f config.xml ]; then
-            cp config.xml my-app/config.xml
-          fi
-          # Copy Web Files
-          if [ -f index.html ]; then cp index.html my-app/www/index.html; fi
-          cp -r *.css my-app/www/ 2>/dev/null || true
-          cp -r *.js my-app/www/ 2>/dev/null || true
-          if [ -f logo.png ]; then cp logo.png my-app/www/logo.png; fi
+        Run: |
+          Cordova create my-app com.arappcreator.sellerpro "Seller Pro"
+          Cd my-app
+          Cordova platform add android
 
       - name: Install Safe Printer Plugin
-        run: |
-          cd my-app
-          # پرنٹر پلگ ان کو گٹ ہب سورس سے بالکل نئے ورژن کے ساتھ انسٹال کرنا تاکہ بلڈ کریش نہ ہو
-          cordova plugin add https://github.com/katzer/cordova-plugin-printer.git --save
+        Run: |
+          Cd my-app
+          # پرنٹر پلگ ان کو گٹ ہب سورس سے انسٹال کرنا تاکہ اینڈرائیڈ کے نئے ورژن پر کریش نہ ہو
+          Cordova plugin add https://github.com/katzer/cordova-plugin-printer.git --save
+
+      - name: Inject Custom Web Files & Branding
+        Run: |
+          # 1. سب سے پہلے کڈووا کے مین فولڈر میں اپنی کسٹم کنفیگ فائل کاپی کرنا
+          If [ -f config.xml ]; then
+            Cp config.xml my-app/config.xml
+          Fi
+          # 2. پھر تمام ویب فائلز کو 'www' فولڈر کے اندر منتقل کرنا
+          If [ -f index.html ]; then cp index.html my-app/www/index.html; fi
+          Cp -r *.css my-app/www/ 2>/dev/null || true
+          Cp -r *.js my-app/www/ 2>/dev/null || true
+          If [ -f logo.png ]; then cp logo.png my-app/www/logo.png; fi
 
       - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+        Uses: actions/setup-java@v4
+        With:
+          Distribution: 'zulu'
+          Java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        Uses: android-actions/setup-android@v3
 
       - name: Build Android APK
-        run: |
-          cd my-app
-          cordova build android
+        Run: |
+          Cd my-app
+          # کڈووا پروجیکٹ کو اینڈرائیڈ اے پی کے کے لیے بلڈ کرنا
+          Cordova build android
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Android-APK
-          path: my-app/platforms/android/app/build/outputs/apk/debug/*.apk
+        Uses: actions/upload-artifact@v4
+        With:
+          Name: Android-APK
+          Path: my-app/platforms/android/app/build/outputs/apk/debug/*.apk
