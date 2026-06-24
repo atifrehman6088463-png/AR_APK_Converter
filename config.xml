@@ -28,8 +28,6 @@
     
     <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 
-    <plugin name="cordova-plugin-printer" spec="https://github.com/katzer/cordova-plugin-printer.git" />
-
     <platform name="android">
         <allow-intent href="market:*" />
         
