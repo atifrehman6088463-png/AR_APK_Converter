@@ -17,6 +17,13 @@
 
     <icon src="www/logo.png" />
 
+    <!-- स्पीकर और मीडिया को बिना रुकावट चलाने के लिए सेटिंग्स -->
+    <preference name="AllowInlineMediaPlayback" value="true" />
+    <preference name="MediaPlaybackRequiresUserGesture" value="false" />
+    
+    <!-- दूसरे मोबाइल में HTML पाथ/सिक्योरिटी एरर रोकने के लिए -->
+    <preference name="AndroidInsecureFileModeEnabled" value="true" />
+
     <preference name="SplashScreen" value="www/splash.png" />
     <preference name="SplashScreenDelay" value="3000" />
     <preference name="AutoHideSplashScreen" value="true" />
@@ -54,6 +61,8 @@
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
             <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
             <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+            <!-- ऑडियो सेटिंग्स बदलने की अनुमति -->
+            <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
         </config-file>
     </platform>
 </widget>
