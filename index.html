@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockWise Pro - Professional Enterprise ERP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --border: #334155;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            transition: background-color 0.2s, border-color 0.2s, color 0.1s;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 90px;
+        }
+
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .company-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .company-logo-frame {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            background: #e2e8f0;
+        }
+
+        .company-info h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        .company-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-icon:hover {
+            background: var(--bg-main);
+        }
+
+        .room {
+            display: none;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .room.active {
+            display: block;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            border-left: 4px solid var(--primary);
+        }
+        .stat-card.purchase { border-left-color: var(--primary); }
+        .stat-card.stockin { border-left-color: var(--success); }
+        .stat-card.stockout { border-left-color: var(--danger); }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .stat-card .value {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+    
+        .nav-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+        }
+        .nav-card:hover {
+            border-color: var(--primary);
+        }
+        .nav-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .nav-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .suggestion-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 150;
+            box-shadow: var(--shadow);
+        }
+        .suggestion-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .suggestion-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-top: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            font-size: 0.9rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--bg-main);
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .room-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        @media(min-width: 480px) {
+            .room-header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+        .room-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .room-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Fixed Full-Width Balanced Buttons Layout */
+        .btn {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        .btn-finalize {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        @media(min-width: 480px) {
+            .btn-finalize {
+                width: auto;
+                background: transparent;
+                color: var(--primary);
+                border: 1px solid var(--primary);
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 0.85rem;
+            }
+            .btn-finalize:hover {
+                background: var(--primary);
+                color: white;
+            }
+        }
+
+        .multi-entry-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .entry-row {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            align-items: end;
+            position: relative;
+        }
+        @media(min-width: 600px) {
+            .entry-row {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) 45px;
+            }
+        }
+
+        .stock-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .stock-badge.ok { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .stock-badge.low { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 10px 0;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            gap: 4px;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 1.25rem; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: white;
+            color: black;
+            width: 100%;
+            max-width: 550px;
+            border-radius: 14px;
+            padding: 25px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed #cbd5e1;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .danger-zone {
+            margin-top: 25px;
+            border-top: 2px dashed var(--border);
+            padding-top: 20px;
+        }
+        .live-avail-indicator {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--success);
+            margin-top: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="company-profile">
+            <img id="header-logo" src="https://cdn-icons-png.flaticon.com/512/869/869636.png" class="company-logo-frame" alt="Logo">
+            <div class="company-info">
+                <h2 id="header-comp-name">StockWise Pro</h2>
+                <p id="header-owner-desc">Professional ERP Workspace</p>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button class="btn-icon" onclick="toggleAppTheme()"><i id="theme-icon" class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div id="room-home" class="room active">
+        <div class="dashboard-stats">
+            <div class="stat-card purchase" onclick="openRoom('room-all-purchases-history')">
+                <h3>Purchases</h3>
+                <div class="value"><span class="cfg-curr"></span> <span id="dash-total-purc">0.00</span></div>
+            </div>
+            <div class="stat-card stockin" onclick="openRoom('room-all-products')">
+                <h3>Stock In</h3>
+                <div class="value" id="dash-total-in">0 Items</div>
+            </div>
+            <div class="stat-card stockout" onclick="openRoom('room-stockout-history')">
+                <h3>Stock Out</h3>
+                <div class="value" id="dash-total-out">0 Items</div>
+            </div>
+        </div>
+
+        <div style="margin: 20px 0; background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 14px; box-shadow: var(--shadow);">
+            <h4 style="margin-bottom:15px; font-weight:700;"><i class="fas fa-chart-bar" style="color:var(--primary);"></i> Current Workspace Chart Summary</h4>
+            <div style="display:flex; height:20px; border-radius:10px; overflow:hidden; background:var(--border);">
+                <div id="chart-bar-purchase" style="background:var(--primary); width: 33%;"></div>
+                <div id="chart-bar-stockin" style="background:var(--success); width: 33%;"></div>
+                <div id="chart-bar-stockout" style="background:var(--danger); width: 34%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.8rem; color:var(--text-muted);">
+                <span><i class="fas fa-circle" style="color:var(--primary);"></i> Purchases</span>
+                <span><i class="fas fa-circle" style="color:var(--success);"></i> Stock In</span>
+                <span><i class="fas fa-circle" style="color:var(--danger);"></i> Stock Out</span>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom:12px; font-weight:700;">Live Workspace Track</h3>
+        <div class="menu-grid" id="home-live-operations"></div>
+    </div>
+
+    <div id="room-operations" class="room">
+        <div class="menu-grid">
+            <div class="nav-card" onclick="openRoom('room-items-menu')">
+                <div>
+                    <h4>Items & Products</h4>
+                    <p>Manage list, define pack parameters and alert benchmarks</p>
+                </div>
+                <i class="fas fa-box" style="color: var(--primary); font-size:1.3rem;"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-purchase-menu')">
+                <div>
+                    <h4>Purchase Management</h4>
+                    <p>Log incoming purchases, manage vendor invoices & receipts</p>
+                </div>
+                <i class="fas fa-file-invoice-dollar" style="color: var(--success); font-size:1.3rem;"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-stockout-menu')">
+                <div>
+                    <h4>Stock Out Control Hub</h4>
+                    <p>Dispatch terminal execution and chronological history folders</p>
+                </div>
+                <i class="fas fa-truck-ramp-box" style="color: var(--danger); font-size:1.3rem;"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-suppliers-menu')">
+                <div>
+                    <h4>Suppliers Ledger System</h4>
+                    <p>Track wholesale distribution files and monthly statement datasets</p>
+                </div>
+                <i class="fas fa-truck-field" style="color: #f59e0b; font-size:1.3rem;"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-business-history')">
+                <div>
+                    <h4>Total Purchase History</h4>
+                    <p>Financial overview logs categorised by monthly periods</p>
+                </div>
+                <i class="fas fa-history" style="color: #a855f7; font-size:1.3rem;"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-security-privacy')">
+                <div>
+                    <h4>Security & Privacy Room</h4>
+                    <p>Configure corporate profile headers and internal database backups</p>
+                </div>
+                <i class="fas fa-shield-halved" style="color: var(--text-muted); font-size:1.3rem;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="room-items-menu" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-operations')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">Items & Products Workspace</div>
+            </div>
+        </div>
+        <div class="menu-grid">
+            <div class="nav-card" onclick="openRoom('room-add-new-items')">
+                <div>
+                    <h4>Add New Items Form</h4>
+                    <p>Compile a dynamic bulk catalog listing onto internal index</p>
+                </div>
+                <i class="fas fa-plus" style="color: var(--primary);"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-all-products')">
+                <div>
+                    <h4>All Products Stock Inventory</h4>
+                    <p>View current live item counts with automated low level warnings</p>
+                </div>
+                <i class="fas fa-warehouse" style="color: var(--success);"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="room-add-new-items" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="handleAddNewItemsBackNavigation()"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">Add New Items Catalog</div>
+            </div>
+            <button class="btn-finalize" onclick="finalizeBulkItems()"><i class="fas fa-cloud-arrow-up"></i> Finalize Listing</button>
+        </div>
+        <div class="multi-entry-container" id="bulk-items-rows"></div>
+        <button class="btn btn-primary" onclick="addNewItemRow()"><i class="fas fa-plus-circle"></i> Add Item Line Element</button>
+    </div>
+
+    <div id="room-all-products" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-items-menu')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">All Products Stock Directory</div>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item Description</th>
+                        <th>Measurement Unit</th>
+                        <th>Available Quantity</th>
+                        <th>Alert Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="room-purchase-menu" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-operations')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">Purchase Management Hub</div>
+            </div>
+        </div>
+        <div class="menu-grid">
+            <div class="nav-card" onclick="initNewPurchaseForm()">
+                <div>
+                    <h4>Create New Purchase Invoice</h4>
+                    <p>Process incoming raw supplies deliveries and index statements</p>
+                </div>
+                <i class="fas fa-cart-plus" style="color: var(--primary);"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-all-purchases-history')">
+                <div>
+                    <h4>All Purchase History Folders</h4>
+                    <p>Drill-down ledger history organized via chronological dates</p>
+                </div>
+                <i class="fas fa-folder-open" style="color: var(--success);"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="room-new-purchase" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-purchase-menu')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">New Purchase Invoice Entry</div>
+            </div>
+            <button class="btn-finalize" onclick="finalizePurchaseInvoice()"><i class="fas fa-check-double"></i> Finalize Bill</button>
+        </div>
+
+        <div style="background:var(--bg-card); padding:15px; border:1px solid var(--border); border-radius:12px; margin-bottom:20px; display:grid; grid-template-columns:1fr; gap:12px;">
+            <div class="form-group" style="margin:0;">
+                <label>Supplier / Vendor Name</label>
+                <input type="text" id="purc-supplier-input" placeholder="Type vendor..." oninput="suggestSupplier(this, 'purc-supp-box')" autocomplete="off">
+                <div id="purc-supp-box" class="suggestion-box" style="display:none;"></div>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Invoice Number Reference</label>
+                <input type="text" id="purc-invoice-num" placeholder="e.g. INV-9901">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Billing Date</label>
+                <input type="date" id="purc-date">
+            </div>
+        </div>
+
+        <h4 style="margin-bottom:12px; font-weight:700;">Invoice Line Allocation Elements</h4>
+        <div id="invoice-items-lines" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;"></div>
+        <button class="btn btn-primary" onclick="addInvoiceLineRow()"><i class="fas fa-plus-circle"></i> Add Invoice Product Element</button>
+
+        <div style="margin-top:20px; padding:15px; background:var(--bg-card); border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-weight:800;">Calculated Grand Total:</h3>
+            <h2 style="font-weight:900; color:var(--primary);"><span class="cfg-curr"></span> <span id="purc-grand-total">0.00</span></h2>
+        </div>
+    </div>
+
+    <div id="room-all-purchases-history" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-purchase-menu')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title" id="purc-hist-title">Purchase Chronological Logs</div>
+            </div>
+        </div>
+        <div id="purchase-history-drill-container" class="menu-grid"></div>
+    </div>
+
+    <div id="room-stockout-menu" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-operations')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">Stock Out Control Hub</div>
+            </div>
+        </div>
+        <div class="menu-grid">
+            <div class="nav-card" onclick="openRoom('room-stockout-workspace')">
+                <div>
+                    <h4>Create Stock Out Dispatch</h4>
+                    <p>Issue structural delivery manifests and subtract store counters</p>
+                </div>
+                <i class="fas fa-minus-circle" style="color: var(--danger); font-size:1.3rem;"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-stockout-history')">
+                <div>
+                    <h4>View Stock Out History Logs</h4>
+                    <p>Track drill-down chronological folders of all outbound operations</p>
+                </div>
+                <i class="fas fa-history" style="color: var(--text-muted); font-size:1.3rem;"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="room-stockout-workspace" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-stockout-menu')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">Stock Out Dispatch Terminal</div>
+            </div>
+            <button class="btn-finalize" onclick="finalizeStockOutDispatch()"><i class="fas fa-truck-ramp-box"></i> Finalize Despatch</button>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border); padding:15px; border-radius:12px; margin-bottom:20px; display:grid; grid-template-columns:1fr; gap:12px;">
+            <div class="form-group" style="margin:0;">
+                <label>Dispatch Date</label>
+                <input type="date" id="stockout-date">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Reference Document Memo ID</label>
+                <input type="text" id="stockout-memo-num" placeholder="e.g. MEMO-8801">
+            </div>
+        </div>
+        <h4 style="margin-bottom:12px; font-weight:700;">Allocation Items Grid Lines</h4>
+        <div id="stockout-items-lines" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;"></div>
+        <button class="btn btn-primary" onclick="addStockOutLineRow()"><i class="fas fa-plus-circle"></i> Add Allocation Row</button>
+    </div>
+
+    <div id="room-stockout-history" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-stockout-menu')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title" id="stockout-hist-title">Stock Out Chronological Memos</div>
+            </div>
+        </div>
+        <div id="stockout-history-root" class="menu-grid"></div>
+    </div>
+
+    <div id="room-suppliers-menu" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-operations')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">Suppliers Ledger Workspace</div>
+            </div>
+        </div>
+        <div class="menu-grid">
+            <div class="nav-card" onclick="openRoom('room-add-supplier')">
+                <div>
+                    <h4>Add New Supplier Vendor</h4>
+                    <p>Enroll distribution records profile to mapping architecture</p>
+                </div>
+                <i class="fas fa-user-plus" style="color: var(--primary);"></i>
+            </div>
+            <div class="nav-card" onclick="openRoom('room-all-suppliers')">
+                <div>
+                    <h4>All Registered Suppliers Accounts</h4>
+                    <p>Review comprehensive statements records filtered by months</p>
+                </div>
+                <i class="fas fa-address-book" style="color: var(--success);"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="room-add-supplier" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-suppliers-menu')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">Enroll Corporate Vendor Account</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Vendor Business Entity Title *</label>
+            <input type="text" id="supp-name-input" placeholder="e.g. Al-Noor Logistics">
+        </div>
+        <div class="form-group">
+            <label>Physical Workplace Address Location</label>
+            <input type="text" id="supp-address-input" placeholder="e.g. Industrial Area Str 10">
+        </div>
+        <div class="form-group">
+            <label>Corporate Contact Phone Number</label>
+            <input type="tel" id="supp-phone-input" placeholder="e.g. +974xxxxxxxx">
+        </div>
+        <button class="btn btn-success" onclick="saveNewSupplierAccount()">Commit Vendor Profile</button>
+    </div>
+
+ 
+    <div id="room-all-suppliers" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-suppliers-menu')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title" id="supp-directory-title">Suppliers Directory Index</div>
+            </div>
+        </div>
+        <div id="suppliers-directory-root" class="menu-grid"></div>
+    </div>
+
+    <div id="room-business-history" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-operations')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title" id="biz-history-title">Total Purchases History Record</div>
+            </div>
+        </div>
+        <div id="biz-history-root" class="menu-grid"></div>
+    </div>
+
+    <div id="room-security-privacy" class="room">
+        <div class="room-header">
+            <div class="room-header-left">
+                <button class="btn-icon" onclick="openRoom('room-operations')"><i class="fas fa-arrow-left"></i></button>
+                <div class="room-title">System Profile & Security</div>
+            </div>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border); padding:20px; border-radius:14px; box-shadow:var(--shadow);">
+            <div class="form-group">
+                <label>Corporate Company / Business Entity Title</label>
+                <input type="text" id="cfg-comp-name" value="StockWise Pro">
+            </div>
+            <div class="form-group">
+                <label>Authorized Owner Full Name</label>
+                <input type="text" id="cfg-owner-name" value="Owner">
+            </div>
+            <div class="form-group">
+                <label>Corporate Contact Mobile Number</label>
+                <input type="tel" id="cfg-phone" placeholder="+974xxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>Official Business Contact Email</label>
+                <input type="email" id="cfg-email" placeholder="info@corporate.com">
+            </div>
+            <div class="form-group">
+                <label>Manual Country Currency Code Text</label>
+                <input type="text" id="cfg-currency" value="Rs">
+            </div>
+            <div class="form-group">
+                <label>Corporate Image Branding Logo File Upload</label>
+                <input type="file" id="cfg-logo" accept="image/*" onchange="processBrandingLogoUpload()">
+            </div>
+            <button class="btn btn-primary" onclick="commitConfigurationProfile()"><i class="fas fa-save"></i> Commit Enterprise Configuration</button>
+
+            <div class="danger-zone">
+                <h4 style="color:var(--danger); margin-bottom:12px; font-weight:700;">Data Management Core Engine</h4>
+                <button class="btn btn-primary" style="background:#475569;" onclick="triggerSystemStateExport()"><i class="fas fa-download"></i> Download Local Database Backup File (.json)</button>
+                <button class="btn btn-danger" onclick="triggerEntireSystemPurge()"><i class="fas fa-trash-can"></i> Purge Entire Application System State</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="btn-nav-home" onclick="openRoom('room-home')">
+            <i class="fas fa-chart-pie"></i>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" id="btn-nav-ops" onclick="openRoom('room-operations')">
+            <i class="fas fa-cubes"></i>
+            <span>Operations</span>
+        </button>
+    </nav>
+
+    <div class="modal-overlay" id="global-receipt-modal">
+        <div class="modal-card">
+            <div id="receipt-printable-area"></div>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px; padding-top:15px; border-top:1px solid #e2e8f0;">
+                <button class="btn btn-primary" onclick="triggerPDFDownload()"><i class="fas fa-file-pdf"></i> Download PDF Document</button>
+                <button class="btn" style="background:#cbd5e1; color:#334155; margin-top:0;" onclick="closeReceiptModal()"><i class="fas fa-circle-xmark"></i> Close Overlay Window</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let state = JSON.parse(localStorage.getItem('stockwise_pro_core_db')) || {
+            profile: { companyName: "StockWise Pro", ownerName: "Owner", phone: "", email: "", currency: "Rs", logo: "https://cdn-icons-png.flaticon.com/512/869/869636.png" },
+            theme: "light",
+            products: {},
+            suppliers: {},
+            purchases: [],
+            stockouts: []
+        };
+
+        let navigationContextIntercept = {
+            isIntercepted: false,
+            returnRoomId: '',
+            targetRowLineId: '',
+            prefilledNameValue: ''
+        };
+
+        let currentDrillDownSupplierId = null;
+        let currentDrillDownMonthId = null;
+        let currentDrillDownDateId = null;
+        let activeReceiptDataMemory = null;
+
+        window.onload = function() {
+            setAppDateDefaults();
+            commitUIRefresh();
+            openRoom('room-home');
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.matches('.line-prod-name') && !e.target.matches('.so-prod-name') && !e.target.matches('#purc-supplier-input') && !e.target.matches('.suggestion-item')) {
+                    document.querySelectorAll('.suggestion-box').forEach(box => box.style.display = 'none');
+                }
+            });
+        };
+
+        function setAppDateDefaults() {
+            const today = new Date().toISOString().split('T')[0];
+            if(document.getElementById('purc-date')) document.getElementById('purc-date').value = today;
+            if(document.getElementById('stockout-date')) document.getElementById('stockout-date').value = today;
+        }
+
+        function persistState() {
+            localStorage.setItem('stockwise_pro_core_db', JSON.stringify(state));
+            commitUIRefresh();
+        }
+
+        function toggleAppTheme() {
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            persistState();
+        }
+
+        function openRoom(roomId) {
+            document.querySelectorAll('.room').forEach(rm => rm.classList.remove('active'));
+            const activeRoom = document.getElementById(roomId);
+            if(activeRoom) activeRoom.classList.add('active');
+
+            document.getElementById('btn-nav-home').classList.remove('active');
+            document.getElementById('btn-nav-ops').classList.remove('active');
+
+            if(['room-home', 'room-stockout-workspace', 'room-stockout-history'].includes(roomId)) {
+                document.getElementById('btn-nav-home').classList.add('active');
+            } else {
+                document.getElementById('btn-nav-ops').classList.add('active');
+            }
+
+            if(roomId === 'room-home') renderHomeOperationsShortcuts();
+            if(roomId === 'room-add-new-items' && !navigationContextIntercept.isIntercepted) resetBulkItemsFormContainer();
+            if(roomId === 'room-all-products') renderInventoryStockDirectory();
+            if(roomId === 'room-all-purchases-history') renderPurchaseChronologicalLogsRoom();
+            if(roomId === 'room-all-suppliers') renderSuppliersDirectoryRootRoom();
+            if(roomId === 'room-business-history') renderTotalBusinessHistoryPeriodicalRoom();
+            if(roomId === 'room-stockout-workspace') resetStockOutFormContainer();
+            if(roomId === 'room-stockout-history') renderStockOutHistoryRootRoom();
+        }
+
+        function handleAddNewItemsBackNavigation() {
+            if(navigationContextIntercept.isIntercepted) {
+                let targetRoom = navigationContextIntercept.returnRoomId;
+                clearInterceptContext();
+                openRoom(targetRoom);
+            } else {
+                openRoom('room-items-menu');
+            }
+        }
+
+        function clearInterceptContext() {
+            navigationContextIntercept.isIntercepted = false;
+            navigationContextIntercept.returnRoomId = '';
+            navigationContextIntercept.targetRowLineId = '';
+            navigationContextIntercept.prefilledNameValue = '';
+        }
+
+        function commitUIRefresh() {
+            document.documentElement.setAttribute('data-theme', state.theme);
+            const icon = document.getElementById('theme-icon');
+            if(icon) icon.className = state.theme === 'dark' ? "fas fa-sun" : "fas fa-moon";
+
+            document.getElementById('header-comp-name').innerText = state.profile.companyName;
+            document.getElementById('header-owner-desc').innerText = `Authorized Owner: ${state.profile.ownerName}`;
+            document.getElementById('header-logo').src = state.profile.logo;
+
+            document.getElementById('cfg-comp-name').value = state.profile.companyName;
+            document.getElementById('cfg-owner-name').value = state.profile.ownerName;
+            document.getElementById('cfg-phone').value = state.profile.phone;
+            document.getElementById('cfg-email').value = state.profile.email;
+            document.getElementById('cfg-currency').value = state.profile.currency;
+
+            document.querySelectorAll('.cfg-curr').forEach(el => el.innerText = state.profile.currency);
+
+            calculateDashboardStatistics();
+        }
+
+        function calculateDashboardStatistics() {
+            let totalPurcSum = 0;
+            state.purchases.forEach(p => totalPurcSum += parseFloat(p.grandTotal || 0));
+            document.getElementById('dash-total-purc').innerText = totalPurcSum.toFixed(2);
+
+            let stockInCount = 0;
+            for(let key in state.products) {
+                stockInCount += Math.floor(state.products[key].qtyAvailable || 0);
+            }
+            document.getElementById('dash-total-in').innerText = `${stockInCount} Items`;
+
+            let stockOutSum = 0;
+            state.stockouts.forEach(s => {
+                s.items.forEach(it => { stockOutSum += parseFloat(it.qtyDispatched || 0); });
+            });
+            document.getElementById('dash-total-out').innerText = `${stockOutSum.toFixed(1)} Items`;
+
+            let maxVal = Math.max(totalPurcSum, stockInCount, stockOutSum, 1);
+            document.getElementById('chart-bar-purchase').style.width = `${Math.max((totalPurcSum/maxVal)*100, 10)}%`;
+            document.getElementById('chart-bar-stockin').style.width = `${Math.max((stockInCount/maxVal)*100, 10)}%`;
+            document.getElementById('chart-bar-stockout').style.width = `${Math.max((stockOutSum/maxVal)*100, 10)}%`;
+        }
+
+        function renderHomeOperationsShortcuts() {
+            document.getElementById('home-live-operations').innerHTML = `
+                <div class="nav-card" onclick="openRoom('room-new-purchase')">
+                    <div>
+                        <h4>New Invoice Inbound Process</h4>
+                        <p>Receive goods from distributions instantly</p>
+                    </div>
+                    <i class="fas fa-plus" style="color:var(--success);"></i>
+                </div>
+                <div class="nav-card" onclick="openRoom('room-stockout-workspace')">
+                    <div>
+                        <h4>Create Stock Out Dispatch</h4>
+                        <p>Issue delivery manifests & subtract store counts</p>
+                    </div>
+                    <i class="fas fa-minus-circle" style="color:var(--danger);"></i>
+                </div>
+                <div class="nav-card" onclick="openRoom('room-stockout-history')">
+                    <div>
+                        <h4>View Stock Out History Logs</h4>
+                        <p>Track drill-down chronological folders of dispatch items</p>
+                    </div>
+                    <i class="fas fa-history" style="color:var(--text-muted);"></i>
+                </div>
+                <div class="nav-card" onclick="openRoom('room-operations')">
+                    <div>
+                        <h4>System Control Panel Room</h4>
+                        <p>View all available nested subsystems modules</p>
+                    </div>
+                    <i class="fas fa-sliders" style="color:var(--primary);"></i>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // ROOM 1: ITEMS MANAGEMENT & LOGICS ENGINE
+        // ==========================================
+        function resetBulkItemsFormContainer() {
+            const container = document.getElementById('bulk-items-rows');
+            container.innerHTML = '';
+            addNewItemRow();
+        }
+
+        function addNewItemRow(prefilledName = '') {
+            const container = document.getElementById('bulk-items-rows');
+            const rowId = 'row_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'entry-row';
+            rowDiv.id = rowId;
+            rowDiv.innerHTML = `
+                <div class="form-group" style="margin:0;">
+                    <label>Product Title Name</label>
+                    <input type="text" class="item-name" value="${prefilledName}" placeholder="Item descriptive title">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Measurement Unit</label>
+                    <select class="item-unit" onchange="toggleEachPiecesInput('${rowId}', this.value)">
+                        <option value="Pieces">Pieces (Pcs)</option>
+                        <option value="Carton">Carton</option>
+                        <option value="Box">Box</option>
+                        <option value="Packet">Packet</option>
+                        <option value="KG">Kilogram (KG)</option>
+                    </select>
+                </div>
+                <div class="form-group each-pcs-group" style="margin:0; display:none;">
+                    <label>Each Pieces Per Unit</label>
+                    <input type="number" class="item-each-pcs" value="1" min="1">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Opening Quantity</label>
+                    <input type="number" class="item-qty" value="0" min="0" step="any">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Low Stock Limit</label>
+                    <input type="number" class="item-alert-limit" value="5" min="0">
+                </div>
+                <button class="btn btn-danger" style="margin-top:0; padding:10px;" onclick="removeEntryRow('${rowId}')"><i class="fas fa-trash"></i> Remove</button>
+            `;
+            container.appendChild(rowDiv);
+        }
+
+        function removeEntryRow(id) {
+            const row = document.getElementById(id);
+            if(row) row.remove();
+        }
+
+        function toggleEachPiecesInput(rowId, val) {
+            const row = document.getElementById(rowId);
+            const group = row.querySelector('.each-pcs-group');
+            if(val === 'Carton' || val === 'Box') {
+                group.style.display = 'block';
+            } else {
+                group.style.display = 'none';
+                row.querySelector('.item-each-pcs').value = "1";
+            }
+        }
+
+        function finalizeBulkItems() {
+            const container = document.getElementById('bulk-items-rows');
+            const rows = container.querySelectorAll('.entry-row');
+            let itemCounter = 0;
+            let lastSavedProductName = '';
+
+            rows.forEach(row => {
+                const name = row.querySelector('.item-name').value.trim();
+                const unit = row.querySelector('.item-unit').value;
+                const eachPcs = parseFloat(row.querySelector('.item-each-pcs').value) || 1;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const limit = parseFloat(row.querySelector('.item-alert-limit').value) || 0;
+
+                if(name) {
+                    let totalPcs = qty;
+                    if(unit === 'Carton' || unit === 'Box') totalPcs = qty * eachPcs;
+                    if(unit === 'KG') totalPcs = qty * 1000;
+
+                    const productKey = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    
+                    if(!state.products[productKey]) {
+                        state.products[productKey] = {
+                            name: name, unit: unit, eachPieces: eachPcs, qtyAvailable: totalPcs, lowStockLimit: limit
+                        };
+                    } else {
+                        state.products[productKey].qtyAvailable += totalPcs;
+                    }
+                    itemCounter++;
+                    lastSavedProductName = name;
+                }
+            });
+
+            if(itemCounter > 0) {
+                persistState();
+                alert(`Successfully indexed ${itemCounter} items definitions.`);
+                
+                if(navigationContextIntercept.isIntercepted) {
+                    let returnRoom = navigationContextIntercept.returnRoomId;
+                    let targetRowId = navigationContextIntercept.targetRowLineId;
+                    
+                    openRoom(returnRoom);
+                    
+                    const targetRow = document.getElementById(targetRowId);
+                    if(targetRow) {
+                        const inputField = targetRow.querySelector('.line-prod-name') || targetRow.querySelector('.so-prod-name');
+                        if(inputField) inputField.value = lastSavedProductName;
+                        const unitField = targetRow.querySelector('.line-unit') || targetRow.querySelector('.so-unit');
+                        const productKey = lastSavedProductName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                        if(unitField && state.products[productKey]) {
+                            unitField.value = state.products[productKey].unit;
+                        }
+                    }
+                    clearInterceptContext();
+                } else {
+                    openRoom('room-all-products');
+                }
+            } else {
+                alert("Processing failed. Please ensure at least one Line contains a Product Title.");
+            }
+        }
+
+     
+        function renderInventoryStockDirectory() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+
+            for(let key in state.products) {
+                let p = state.products[key];
+                let displayQtyStr = `${p.qtyAvailable} Pcs`;
+                let isAlertTriggered = p.qtyAvailable <= p.lowStockLimit;
+
+                if(p.unit === 'Carton' || p.unit === 'Box') {
+                    let fullUnits = Math.floor(p.qtyAvailable / p.eachPieces);
+                    let loosePcs = p.qtyAvailable % p.eachPieces;
+                    displayQtyStr = `${fullUnits} ${p.unit}s & ${loosePcs} Pcs`;
+                } else if(p.unit === 'KG') {
+                    let kgs = (p.qtyAvailable / 1000).toFixed(3);
+                    displayQtyStr = `${kgs} KG`;
+                    isAlertTriggered = (p.qtyAvailable / 1000) <= p.lowStockLimit;
+                }
+
+                let badge = isAlertTriggered ? `<span class="stock-badge low">Low Alert</span>` : `<span class="stock-badge ok">Optimal</span>`;
+                let rowBg = isAlertTriggered ? `style="background: rgba(239, 68, 68, 0.04);"` : '';
+
+                tbody.innerHTML += `
+                    <tr ${rowBg}>
+                        <td style="font-weight:600;">${p.name}</td>
+                        <td><small style="color:var(--text-muted); font-weight:bold;">${p.unit}</small></td>
+                        <td style="font-weight:700;">${displayQtyStr}</td>
+                        <td>${badge}</td>
+                        <td><button class="btn-icon" style="color:var(--danger);" onclick="deleteProductFromInventory('${key}')"><i class="fas fa-square-xmark"></i></button></td>
+                    </tr>
+                `;
+            }
+
+            if(Object.keys(state.products).length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Database Inventory Log Registry Empty</td></tr>`;
+            }
+        }
+
+        function deleteProductFromInventory(key) {
+            if(confirm("Confirm deletion of this item entry? This cannot be reversed.")) {
+                delete state.products[key];
+                persistState();
+                renderInventoryStockDirectory();
+            }
+        }
+
+        // ==========================================
+        // ROOM 2: PURCHASE ENTRY & SUGGESTIONS LOGICS
+        // ==========================================
+        function suggestSupplier(inputElement, targetBoxId) {
+            const text = inputElement.value.toLowerCase();
+            const box = document.getElementById(targetBoxId);
+            box.innerHTML = '';
+            if(!text) { box.style.display = 'none'; return; }
+
+            let itemsCount = 0;
+            for(let sId in state.suppliers) {
+                let sName = state.suppliers[sId].name;
+                if(sName.toLowerCase().includes(text)) {
+                    itemsCount++;
+                    let div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = sName;
+                    div.onclick = function(e) {
+                        e.stopPropagation();
+                        inputElement.value = sName;
+                        box.style.display = 'none';
+                    };
+                    box.appendChild(div);
+                }
+            }
+            box.style.display = itemsCount > 0 ? 'block' : 'none';
+        }
+
+        function suggestProduct(inputElement, targetBoxId, rowId) {
+            const text = inputElement.value.toLowerCase();
+            const box = document.getElementById(targetBoxId);
+            box.innerHTML = '';
+            
+            updateLiveStockRowLabelIndicator(rowId, '');
+
+            let itemsCount = 0;
+            for(let pKey in state.products) {
+                let pName = state.products[pKey].name;
+                if(pName.toLowerCase().includes(text)) {
+                    itemsCount++;
+                    let div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = pName;
+                    div.onclick = function(e) {
+                        e.stopPropagation();
+                        inputElement.value = pName;
+                        box.style.display = 'none';
+                        autoFillInvoiceLineDefaults(rowId, pKey);
+                    };
+                    box.appendChild(div);
+                }
+            }
+
+            let divAdd = document.createElement('div');
+            divAdd.className = 'suggestion-item';
+            divAdd.style.background = 'rgba(37,99,235,0.1)';
+            divAdd.style.color = 'var(--primary)';
+            divAdd.style.fontWeight = 'bold';
+            divAdd.innerHTML = `<i class="fas fa-circle-plus"></i> Add New Product Definition...`;
+            divAdd.onclick = function(e) {
+                e.stopPropagation();
+                box.style.display = 'none';
+                interceptAndRedirectToItemsCatalog(rowId, inputElement.value, document.querySelector('.room.active').id);
+            };
+            box.appendChild(divAdd);
+            box.style.display = 'block';
+        }
+
+        function interceptAndRedirectToItemsCatalog(rowId, rawValue, currentActiveRoomId) {
+            navigationContextIntercept.isIntercepted = true;
+            navigationContextIntercept.returnRoomId = currentActiveRoomId;
+            navigationContextIntercept.targetRowLineId = rowId;
+            navigationContextIntercept.prefilledNameValue = rawValue;
+
+            openRoom('room-add-new-items');
+            
+            const container = document.getElementById('bulk-items-rows');
+            container.innerHTML = '';
+            addNewItemRow(rawValue);
+        }
+
+        function autoFillInvoiceLineDefaults(rowId, pKey) {
+            const row = document.getElementById(rowId);
+            const p = state.products[pKey];
+            
+            const unitField = row.querySelector('.line-unit') || row.querySelector('.so-unit');
+            if(unitField) unitField.value = p.unit;
+
+            let stockStr = '';
+            if(p.unit === 'KG') {
+                stockStr = `Available Stock: ${(p.qtyAvailable / 1000).toFixed(3)} KG`;
+            } else if(p.unit === 'Carton' || p.unit === 'Box') {
+                stockStr = `Available Stock: ${Math.floor(p.qtyAvailable / p.eachPieces)} ${p.unit}s & ${p.qtyAvailable % p.eachPieces} Pcs`;
+            } else {
+                stockStr = `Available Stock: ${p.qtyAvailable} Pcs`;
+            }
+            updateLiveStockRowLabelIndicator(rowId, stockStr);
+        }
+
+        function updateLiveStockRowLabelIndicator(rowId, text) {
+            const row = document.getElementById(rowId);
+            if(!row) return;
+            let label = row.querySelector('.live-avail-indicator');
+            if(!label && text) {
+                label = document.createElement('span');
+                label.className = 'live-avail-indicator';
+                row.children[0].appendChild(label);
+            }
+            if(label) label.innerText = text;
+        }
+
+        function initNewPurchaseForm() {
+            openRoom('room-new-purchase');
+            document.getElementById('invoice-items-lines').innerHTML = '';
+            addInvoiceLineRow();
+            calculateInvoiceGrandTotal();
+        }
+
+        function addInvoiceLineRow() {
+            const container = document.getElementById('invoice-items-lines');
+            const rowId = 'line_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+            const div = document.createElement('div');
+            div.className = 'entry-row';
+            div.id = rowId;
+            div.innerHTML = `
+                <div class="form-group" style="margin:0;">
+                    <label>Product Selection</label>
+                    <input type="text" class="line-prod-name" placeholder="Type items name..." oninput="suggestProduct(this, '${rowId}_p_box', '${rowId}')" autocomplete="off">
+                    <div id="${rowId}_p_box" class="suggestion-box" style="display:none;"></div>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Purchased Unit</label>
+                    <select class="line-unit">
+                        <option value="Pieces">Pieces (Pcs)</option>
+                        <option value="Carton">Carton</option>
+                        <option value="Box">Box</option>
+                        <option value="Packet">Packet</option>
+                        <option value="KG">Kilogram (KG)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Quantity Count</label>
+                    <input type="number" class="line-qty" value="1" min="0.001" step="any" oninput="calculateInvoiceGrandTotal()">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Unit Price Cost</label>
+                    <input type="number" class="line-price" value="0" min="0" step="any" oninput="calculateInvoiceGrandTotal()">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Total Price Line</label>
+                    <input type="text" class="line-total-cost" value="0.00" readonly style="background:var(--bg-main); font-weight:700;">
+                </div>
+                <button class="btn btn-danger" style="margin-top:0; padding:10px;" onclick="removeEntryRow('${rowId}'); calculateInvoiceGrandTotal();"><i class="fas fa-trash"></i> Delete</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function calculateInvoiceGrandTotal() {
+            const container = document.getElementById('invoice-items-lines');
+            const rows = container.querySelectorAll('.entry-row');
+            let totalAccumulator = 0;
+
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.line-price').value) || 0;
+                const sum = qty * price;
+                row.querySelector('.line-total-cost').value = sum.toFixed(2);
+                totalAccumulator += sum;
+            });
+
+            document.getElementById('purc-grand-total').innerText = totalAccumulator.toFixed(2);
+        }
+
+        function finalizePurchaseInvoice() {
+            const supplierName = document.getElementById('purc-supplier-input').value.trim();
+            const invoiceNum = document.getElementById('purc-invoice-num').value.trim() || ('INV-' + Date.now().toString().slice(-6));
+            const billingDate = document.getElementById('purc-date').value;
+            const grandTotal = parseFloat(document.getElementById('purc-grand-total').innerText) || 0;
+
+            if(!supplierName || !billingDate) {
+                alert("Validation failure: Supplier name and billing date are required.");
+                return;
+            }
+
+            const rows = document.getElementById('invoice-items-lines').querySelectorAll('.entry-row');
+            let invoiceItemsAllocations = [];
+            let validationCheckFlag = true;
+
+            rows.forEach(row => {
+                const pName = row.querySelector('.line-prod-name').value.trim();
+                const unit = row.querySelector('.line-unit').value;
+                const qty = parseFloat(row.querySelector('.line-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.line-price').value) || 0;
+
+                if(!pName || qty <= 0) { validationCheckFlag = false; return; }
+
+                invoiceItemsAllocations.push({
+                    name: pName, unit: unit, qtyPurchased: qty, unitCost: price, subTotal: qty * price
+                });
+            });
+
+            if(!validationCheckFlag || invoiceItemsAllocations.length === 0) {
+                alert("Validation error: Ensure all allocated lines contain valid items and quantities.");
+                return;
+            }
+
+            const invoicePayload = {
+                id: 'bill_' + Date.now(), supplierName: supplierName, invoiceNumber: invoiceNum, date: billingDate, items: invoiceItemsAllocations, grandTotal: grandTotal
+            };
+
+            state.purchases.push(invoicePayload);
+
+            invoiceItemsAllocations.forEach(alloc => {
+                const key = alloc.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                if(state.products[key]) {
+                    let totalPcs = alloc.qtyPurchased;
+                    if(state.products[key].unit === 'Carton' || state.products[key].unit === 'Box') {
+                        totalPcs = alloc.qtyPurchased * state.products[key].eachPieces;
+                    } else if(state.products[key].unit === 'KG') {
+                        totalPcs = alloc.qtyPurchased * 1000;
+                    }
+                    state.products[key].qtyAvailable += totalPcs;
+                } else {
+                    let initialTotal = alloc.qtyPurchased;
+                    if(alloc.unit === 'KG') initialTotal = alloc.qtyPurchased * 1000;
+                    state.products[key] = {
+                        name: alloc.name, unit: alloc.unit, eachPieces: 1, qtyAvailable: initialTotal, lowStockLimit: 5
+                    };
+                }
+            });
+
+            let supplierExistFlag = false;
+            for(let sId in state.suppliers) {
+                if(state.suppliers[sId].name.toLowerCase() === supplierName.toLowerCase()) supplierExistFlag = true;
+            }
+            if(!supplierExistFlag) {
+                state.suppliers['supp_' + Date.now()] = { name: supplierName, address: "Auto Registry Index", phone: "---" };
+            }
+
+            persistState();
+            triggerComputerizedReceiptDisplay(invoicePayload, 'PURCHASE INBOUND VENDOR RECEIPT');
+            openRoom('room-purchase-menu');
+        }
+
+        // ==========================================
+        // DOCUMENT GENERATION VIEW LAYER (PDF MODAL)
+        // ==========================================
+        function triggerComputerizedReceiptDisplay(payload, documentClassificationHeader) {
+            activeReceiptDataMemory = payload;
+            const target = document.getElementById('receipt-printable-area');
+            
+            let linesMarkup = '';
+            let lineItemsListArray = payload.items || [];
+            
+            lineItemsListArray.forEach((item, index) => {
+                let rightColVal = item.subTotal ? `${state.profile.currency} ${item.subTotal.toFixed(2)}` : `${(item.qtyDispatched || 0).toFixed(3)} ${item.unit}`;
+                let descRateLine = item.unitCost ? `@ ${state.profile.currency} ${item.unitCost.toFixed(2)} / ${item.unit}` : `Measurement unit: ${item.unit}`;
+                linesMarkup += `
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #e2e8f0; font-size:0.85rem;">
+                        <div>
+                            <strong>${index+1}. ${item.name}</strong><br>
+                            <small style="color:#64748b;">Qty: ${item.qtyPurchased || item.qtyDispatched} (${item.unit}) ${descRateLine}</small>
+                        </div>
+                        <div style="font-weight:bold; align-self:center;">${rightColVal}</div>
+                    </div>
+                `;
+            });
+
+            let finalFooterTotalBlockMarkup = payload.grandTotal ? `
+                <div style="display:flex; justify-content:space-between; margin-top:15px; padding-top:10px; border-top:2px solid #0f172a;">
+                    <h3 style="margin:0; font-size:1.1rem; font-weight:800;">GRAND BALANCE TOTAL:</h3>
+                    <h3 style="margin:0; font-size:1.1rem; font-weight:900; color:#2563eb;">${state.profile.currency} ${payload.grandTotal.toFixed(2)}</h3>
+                </div>
+            ` : '';
+
+            target.innerHTML = `
+                <div class="receipt-header">
+                    <img src="${state.profile.logo}" style="width:55px; height:55px; border-radius:8px; object-fit:cover; margin-bottom:5px;">
+                    <h2 style="margin:0; font-size:1.4rem; font-weight:900; color:#0f172a;">${state.profile.companyName}</h2>
+                    <p style="margin:2px 0; font-size:0.75rem; color:#64748b; font-weight:600;">${documentClassificationHeader}</p>
+                    <p style="margin:2px 0; font-size:0.75rem; color:#64748b;">${state.profile.phone} | ${state.profile.email}</p>
+                </div>
+                <div style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.8rem; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <div><strong>Doc Ref:</strong> ${payload.invoiceNumber || payload.memoId}</div>
+                    <div><strong>Date:</strong> ${payload.date}</div>
+                    <div style="grid-column:1/3;"><strong>Partner Entity:</strong> ${payload.supplierName || 'Warehouse Dispatch Counterparty'}</div>
+                </div>
+                <div style="min-height:120px;">${linesMarkup}</div>
+                ${finalFooterTotalBlockMarkup}
+                <div style="text-align:center; margin-top:25px; font-size:0.7rem; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:10px;">
+                    System metadata generated securely through StockWise Pro ERP Enterprise Suite.
+                </div>
+            `;
+
+            document.getElementById('global-receipt-modal').classList.add('active');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('global-receipt-modal').classList.remove('active');
+            activeReceiptDataMemory = null;
+        }
+
+        function triggerPDFDownload() {
+            if(!activeReceiptDataMemory) return;
+            const element = document.getElementById('receipt-printable-area');
+            let filenameStr = `Doc_${activeReceiptDataMemory.invoiceNumber || activeReceiptDataMemory.memoId}.pdf`;
+            
+            let options = {
+                margin: 12, filename: filenameStr, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2.5, useCORS: true }, jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(options).save();
+        }
+
+        // ==========================================
+        // ROOM 2B: DRILL-DOWN HISTORY LOGS ARCHITECTURE
+        // ==========================================
+        function renderPurchaseChronologicalLogsRoom() {
+            const container = document.getElementById('purchase-history-drill-container');
+            container.innerHTML = '';
+            document.getElementById('purc-hist-title').innerText = "Chronological Dates Registry";
+
+            let dateRecordsMap = {};
+            state.purchases.forEach(p => dateRecordsMap[p.date] = true);
+            let uniqueDatesSortedArray = Object.keys(dateRecordsMap).sort().reverse();
+
+            uniqueDatesSortedArray.forEach(dStr => {
+                let matchesCount = state.purchases.filter(p => p.date === dStr).length;
+                container.innerHTML += `
+                    <div class="nav-card" onclick="drillDownPurchaseDatesToSuppliers('${dStr}')">
+                        <div>
+                            <h4>Timeline Period: ${dStr}</h4>
+                            <p>Contains indexing records tracking ${matchesCount} vendor delivery payloads</p>
+                        </div>
+                        <i class="fas fa-calendar-day" style="color:var(--primary);"></i>
+                    </div>
+                `;
+            });
+
+            if(uniqueDatesSortedArray.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:var(--text-muted); margin-top:20px;">History logs are empty</p>`;
+            }
+        }
+
+        function drillDownPurchaseDatesToSuppliers(dStr) {
+            currentDrillDownDateId = dStr;
+            const container = document.getElementById('purchase-history-drill-container');
+            document.getElementById('purc-hist-title').innerText = `Vendors on: ${dStr}`;
+            container.innerHTML = `<button class="btn btn-primary" style="margin-bottom:15px;" onclick="renderPurchaseChronologicalLogsRoom()"><i class="fas fa-chevron-left"></i> Return back to periods index</button>`;
+
+            let filteredInvoices = state.purchases.filter(p => p.date === dStr);
+            let temporarySupplierMap = {};
+            filteredInvoices.forEach(inv => temporarySupplierMap[inv.supplierName] = true);
+
+            Object.keys(temporarySupplierMap).forEach(sName => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="drillDownPurchaseSuppliersToInvoices('${sName}')">
+                        <div>
+                            <h4>Vendor Entity: ${sName}</h4>
+                            <p>Cargo receipts allocated on current timeline</p>
+                        </div>
+                        <i class="fas fa-truck" style="color:var(--success);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function drillDownPurchaseSuppliersToInvoices(sName) {
+            const container = document.getElementById('purchase-history-drill-container');
+            document.getElementById('purc-hist-title').innerText = `${sName} Bills (${currentDrillDownDateId})`;
+            container.innerHTML = `<button class="btn btn-primary" style="margin-bottom:15px;" onclick="drillDownPurchaseDatesToSuppliers('${currentDrillDownDateId}')"><i class="fas fa-chevron-left"></i> Return back to vendors view</button>`;
+
+            let matches = state.purchases.filter(p => p.date === currentDrillDownDateId && p.supplierName.toLowerCase() === sName.toLowerCase());
+            matches.forEach(inv => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="triggerReceiptDisplayFromHistoryIndex('${inv.id}')">
+                        <div>
+                            <h4>Invoice ID Ref: ${inv.invoiceNumber}</h4>
+                            <p>Total Balance: <strong>${state.profile.currency} ${inv.grandTotal.toFixed(2)}</strong></p>
+                        </div>
+                        <i class="fas fa-receipt" style="color:#f59e0b;"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function triggerReceiptDisplayFromHistoryIndex(id) {
+            let item = state.purchases.find(p => p.id === id);
+            if(item) triggerComputerizedReceiptDisplay(item, 'PURCHASE INBOUND VENDOR RECEIPT');
+        }
+
+        // ==========================================
+        // ROOM 3: SUPPLIERS LOG FILES & STATEMENT REPORTS
+        // ==========================================
+        function saveNewSupplierAccount() {
+            const name = document.getElementById('supp-name-input').value.trim();
+            const address = document.getElementById('supp-address-input').value.trim();
+            const phone = document.getElementById('supp-phone-input').value.trim();
+
+            if(!name) { alert("Vendor title parameter is mandatory."); return; }
+
+            state.suppliers['supp_' + Date.now()] = { name: name, address: address || "N/A", phone: phone || "N/A" };
+            persistState();
+
+            document.getElementById('supp-name-input').value = '';
+            document.getElementById('supp-address-input').value = '';
+            document.getElementById('supp-phone-input').value = '';
+
+            alert("Successfully committed corporate vendor profile.");
+            openRoom('room-all-suppliers');
+        }
+
+        function renderSuppliersDirectoryRootRoom() {
+            const container = document.getElementById('suppliers-directory-root');
+            container.innerHTML = '';
+            document.getElementById('supp-directory-title').innerText = "Supplier Registry Index";
+
+            for(let id in state.suppliers) {
+                let sName = state.suppliers[id].name;
+                container.innerHTML += `
+                    <div class="nav-card" onclick="drillDownSupplierToMonthsFilterRoom('${id}')">
+                        <div>
+                            <h4>${sName}</h4>
+                            <p>Click to open detailed chronological statement folders</p>
+                        </div>
+                        <i class="fas fa-folder" style="color:#f59e0b; font-size:1.3rem;"></i>
+                    </div>
+                `;
+            }
+
+            if(Object.keys(state.suppliers).length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:var(--text-muted); margin-top:20px;">No registered supplier accounts mapped.</p>`;
+            }
+        }
+
+        function drillDownSupplierToMonthsFilterRoom(sId) {
+            currentDrillDownSupplierId = sId;
+            const sName = state.suppliers[sId].name;
+            const container = document.getElementById('suppliers-directory-root');
+            document.getElementById('supp-directory-title').innerText = `${sName} Statements`;
+            
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                    <button class="btn btn-primary" onclick="renderSuppliersDirectoryRootRoom()"><i class="fas fa-chevron-left"></i> Exit Ledger</button>
+                    <button class="btn btn-success" style="margin-top:0;" onclick="generateSupplierMonthlyStatementPDF('${sId}')"><i class="fas fa-file-export"></i> Download Statement</button>
+                </div>
+            `;
+
+            let supplierBills = state.purchases.filter(p => p.supplierName.toLowerCase() === sName.toLowerCase());
+            let distinctMonthsMap = {};
+            supplierBills.forEach(b => { distinctMonthsMap[b.date.substring(0, 7)] = true; });
+
+            Object.keys(distinctMonthsMap).sort().reverse().forEach(mKey => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="drillDownSupplierMonthsToDates('${mKey}')">
+                        <div>
+                            <h4>Billing Period Month: ${mKey}</h4>
+                            <p>Click to expand exact billing calendar records</p>
+                        </div>
+                        <i class="fas fa-calendar-days" style="color:var(--primary);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function drillDownSupplierMonthsToDates(mKey) {
+            currentDrillDownMonthId = mKey;
+            const sName = state.suppliers[currentDrillDownSupplierId].name;
+            const container = document.getElementById('suppliers-directory-root');
+            document.getElementById('supp-directory-title').innerText = `${sName} -> ${mKey}`;
+
+            container.innerHTML = `<button class="btn btn-primary" style="margin-bottom:15px;" onclick="drillDownSupplierToMonthsFilterRoom('${currentDrillDownSupplierId}')"><i class="fas fa-chevron-left"></i> Back to statements view</button>`;
+
+            let bills = state.purchases.filter(p => p.supplierName.toLowerCase() === sName.toLowerCase() && p.date.startsWith(mKey));
+            let distinctDatesMap = {};
+            bills.forEach(b => distinctDatesMap[b.date] = true);
+
+            Object.keys(distinctDatesMap).sort().reverse().forEach(dKey => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="drillDownSupplierDatesToFinalReceipts('${dKey}')">
+                        <div>
+                            <h4>Timeline Log Date: ${dKey}</h4>
+                            <p>Expand individual computed electronic receipts files</p>
+                        </div>
+                        <i class="fas fa-cube" style="color:var(--success);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function drillDownSupplierDatesToFinalReceipts(dKey) {
+            const sName = state.suppliers[currentDrillDownSupplierId].name;
+            const container = document.getElementById('suppliers-directory-root');
+            document.getElementById('supp-directory-title').innerText = `Memos on ${dKey}`;
+
+            container.innerHTML = `<button class="btn btn-primary" style="margin-bottom:15px;" onclick="drillDownSupplierMonthsToDates('${currentDrillDownMonthId}')"><i class="fas fa-chevron-left"></i> Back to dates loop</button>`;
+
+            let matches = state.purchases.filter(p => p.supplierName.toLowerCase() === sName.toLowerCase() && p.date === dKey);
+            matches.forEach(b => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="triggerReceiptDisplayFromHistoryIndex('${b.id}')">
+                        <div>
+                            <h4>Receipt Number ID: ${b.invoiceNumber}</h4>
+                            <p>Grand Financial Total: <strong>${state.profile.currency} ${b.grandTotal.toFixed(2)}</strong></p>
+                        </div>
+                        <i class="fas fa-file-lines" style="color:#a855f7;"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function generateSupplierMonthlyStatementPDF(sId) {
+            const sName = state.suppliers[sId].name;
+            let supplierBills = state.purchases.filter(p => p.supplierName.toLowerCase() === sName.toLowerCase());
+            
+            let frameElement = document.createElement('div');
+            frameElement.style.padding = '30px';
+            frameElement.style.background = 'white';
+            frameElement.style.color = 'black';
+
+            let rowsMarkup = '';
+            let totalAccumulatedCost = 0;
+            supplierBills.forEach(b => {
+                totalAccumulatedCost += b.grandTotal;
+                rowsMarkup += `
+                    <tr>
+                        <td style="padding:8px; border-bottom:1px solid #ccc;">${b.date}</td>
+                        <td style="padding:8px; border-bottom:1px solid #ccc;">${b.invoiceNumber}</td>
+                        <td style="padding:8px; border-bottom:1px solid #ccc; font-weight:bold;">${state.profile.currency} ${b.grandTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            frameElement.innerHTML = `
+                <div style="text-align:center; margin-bottom:25px;">
+                    <h2>${state.profile.companyName}</h2>
+                    <h3>Supplier Activity Ledger Statement</h3>
+                    <p>Vendor Entity Account: <strong>${sName}</strong></p>
+                    <hr style="margin-top:10px; border:1px solid #000;">
+                </div>
+                <table style="width:100%; border-collapse:collapse; text-align:left;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="padding:8px;">Transaction Date</th>
+                            <th style="padding:8px;">Invoice Ref ID</th>
+                            <th style="padding:8px;">Value Balance Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsMarkup}</tbody>
+                </table>
+                <h3 style="margin-top:20px; text-align:right;">Total Volume Expenditure: ${state.profile.currency} ${totalAccumulatedCost.toFixed(2)}</h3>
+            `;
+
+            let option = {
+                margin: 10, filename: `Statement_${sName.replace(/\s+/g, '_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(frameElement).set(option).save();
+        }
+
+        // ==========================================
+        // ROOM 4: TOTAL BUSINESS HISTORY RECORDS
+        // ==========================================
+         function renderTotalBusinessHistoryPeriodicalRoom() {
+            const container = document.getElementById('biz-history-root');
+            container.innerHTML = '';
+            document.getElementById('biz-history-title').innerText = "Total Purchases Management Log";
+
+            let monthsMap = {};
+            state.purchases.forEach(p => monthsMap[p.date.substring(0,7)] = true);
+            let uniqueMonthsSortedArray = Object.keys(monthsMap).sort().reverse();
+
+            uniqueMonthsSortedArray.forEach(mKey => {
+                container.innerHTML += `
+                    <div class="nav-card" style="border-left:4px solid #a855f7;" onclick="drillDownTotalBusinessHistoryMonthToDates('${mKey}')">
+                        <div>
+                            <h4>Period Block: ${mKey}</h4>
+                            <p>Access aggregate operations reports files datasets balances</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button class="btn btn-finalize" onclick="event.stopPropagation(); downloadTotalPeriodicalMonthlyStatementPDF('${mKey}')"><i class="fas fa-file-arrow-down"></i> PDF</button>
+                            <i class="fas fa-chevron-right" style="color:var(--text-muted);"></i>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(uniqueMonthsSortedArray.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:var(--text-muted); margin-top:20px;">No operational business logs history indexed</p>`;
+            }
+        }
+
+        function drillDownTotalBusinessHistoryMonthToDates(mKey) {
+            const container = document.getElementById('biz-history-root');
+            document.getElementById('biz-history-title').innerText = `Timelines under ${mKey}`;
+            container.innerHTML = `<button class="btn btn-primary" style="margin-bottom:15px;" onclick="renderTotalBusinessHistoryPeriodicalRoom()"><i class="fas fa-chevron-left"></i> Return to periods overview</button>`;
+
+            let mBills = state.purchases.filter(p => p.date.startsWith(mKey));
+            let datesMap = {};
+            mBills.forEach(b => datesMap[b.date] = true);
+
+            Object.keys(datesMap).sort().reverse().forEach(dKey => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="drillDownTotalBusinessHistoryDatesToReceipts('${dKey}')">
+                        <div>
+                            <h4>Timeline Calendar Day: ${dKey}</h4>
+                            <p>Examine aggregate combined values inside timeframe</p>
+                        </div>
+                        <i class="fas fa-folder-closed" style="color:var(--primary);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function drillDownTotalBusinessHistoryDatesToReceipts(dKey) {
+            const container = document.getElementById('biz-history-root');
+            document.getElementById('biz-history-title').innerText = `Receipts on ${dKey}`;
+            let extractedMonthKeyRef = dKey.substring(0,7);
+            container.innerHTML = `<button class="btn btn-primary" style="margin-bottom:15px;" onclick="drillDownTotalBusinessHistoryMonthToDates('${extractedMonthKeyRef}')"><i class="fas fa-chevron-left"></i> Back to days sequence</button>`;
+
+            let dayInvoices = state.purchases.filter(p => p.date === dKey);
+            dayInvoices.forEach(inv => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="triggerReceiptDisplayFromHistoryIndex('${inv.id}')">
+                        <div>
+                            <h4>Invoice: ${inv.invoiceNumber} [${inv.supplierName}]</h4>
+                            <p>Financial Subtotal Balance: <strong>${state.profile.currency} ${inv.grandTotal.toFixed(2)}</strong></p>
+                        </div>
+                        <i class="fas fa-print" style="color:var(--success);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function downloadTotalPeriodicalMonthlyStatementPDF(mKey) {
+            let matches = state.purchases.filter(p => p.date.startsWith(mKey));
+            let dailyAggregatesValueMapping = {};
+            matches.forEach(p => {
+                dailyAggregatesValueMapping[p.date] = (dailyAggregatesValueMapping[p.date] || 0) + p.grandTotal;
+            });
+
+            let templateContainerDiv = document.createElement('div');
+            templateContainerDiv.style.padding = '35px';
+            templateContainerDiv.style.background = 'white';
+            templateContainerDiv.style.color = 'black';
+
+            let tableRowsMarkupString = '';
+            let cumulativeGrandTotalSumValue = 0;
+
+            Object.keys(dailyAggregatesValueMapping).sort().forEach(dateKeyStr => {
+                let costVal = dailyAggregatesValueMapping[dateKeyStr];
+                cumulativeGrandTotalSumValue += costVal;
+                tableRowsMarkupString += `
+                    <tr>
+                        <td style="padding:10px; border-bottom:1px solid #e2e8f0; font-weight:bold;">${dateKeyStr}</td>
+                        <td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#1e40af; font-weight:900;">${state.profile.currency} ${costVal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            templateContainerDiv.innerHTML = `
+                <div style="text-align:center; margin-bottom:30px;">
+                    <h1 style="margin:0; color:#1e3a8a;">${state.profile.companyName}</h1>
+                    <h2 style="margin:5px 0; color:#475569;">Enterprise Monthly Financial Statement Log</h2>
+                    <p style="font-size:0.9rem;">Target Block: <strong>${mKey}</strong></p>
+                    <hr style="margin-top:15px; border:1px dashed #000;">
+                </div>
+                <table style="width:100%; border-collapse:collapse; text-align:left; margin-top:20px;">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th style="padding:12px; border-bottom:2px solid #0f172a;">Timeline Day</th>
+                            <th style="padding:12px; border-bottom:2px solid #0f172a;">Combined Inbound Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRowsMarkupString}</tbody>
+                </table>
+                <div style="margin-top:30px; text-align:right; border-top:2px solid #0f172a; padding-top:15px;">
+                    <h2 style="margin:0; font-weight:900;">Cumulative Period Expenditure: <span style="color:#2563eb;">${state.profile.currency} ${cumulativeGrandTotalSumValue.toFixed(2)}</span></h2>
+                </div>
+            `;
+
+            let pdfRenderConfiguration = {
+                margin: 12, filename: `Business_Report_${mKey}.pdf`, image: { type: 'jpeg', quality: 0.99 }, html2canvas: { scale: 2.5 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(templateContainerDiv).set(pdfRenderConfiguration).save();
+        }
+
+       
+        // ==========================================
+        // ROOM 5: STOCK OUT DESPATCH FLUX ENGINE
+        // ==========================================
+        function resetStockOutFormContainer() {
+            document.getElementById('stockout-items-lines').innerHTML = '';
+            addStockOutLineRow();
+        }
+
+        function addStockOutLineRow() {
+            const container = document.getElementById('stockout-items-lines');
+            const rowId = 'so_line_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+            const div = document.createElement('div');
+            div.className = 'entry-row';
+            div.id = rowId;
+            div.innerHTML = `
+                <div class="form-group" style="margin:0;">
+                    <label>Product Inventory Title Target</label>
+                    <input type="text" class="so-prod-name" placeholder="Type name lookup..." oninput="suggestProduct(this, '${rowId}_so_box', '${rowId}')" autocomplete="off">
+                    <div id="${rowId}_so_box" class="suggestion-box" style="display:none;"></div>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Outbound Unit Type</label>
+                    <select class="so-unit">
+                        <option value="Pieces">Pieces (Pcs)</option>
+                        <option value="Carton">Carton</option>
+                        <option value="Box">Box</option>
+                        <option value="Packet">Packet</option>
+                        <option value="KG">Kilogram (KG)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Quantity Count</label>
+                    <input type="number" class="so-qty" value="1" min="0.001" step="any">
+                </div>
+                <button class="btn btn-danger" style="margin-top:0; padding:10px;" onclick="removeEntryRow('${rowId}')"><i class="fas fa-trash"></i> Delete</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function finalizeStockOutDispatch() {
+            const memoId = document.getElementById('stockout-memo-num').value.trim() || ('MEMO-' + Date.now().toString().slice(-6));
+            const dispatchDate = document.getElementById('stockout-date').value;
+
+            if(!dispatchDate) { alert("Dispatch tracking timeline assignment is required."); return; }
+
+            const rows = document.getElementById('stockout-items-lines').querySelectorAll('.entry-row');
+            let dispatchItemsAllocationsList = [];
+            let stockCheckOverageFlag = false;
+            let descriptiveOverageMessageError = '';
+
+            rows.forEach(row => {
+                const pName = row.querySelector('.so-prod-name').value.trim();
+                const unit = row.querySelector('.so-unit').value;
+                const qty = parseFloat(row.querySelector('.so-qty').value) || 0;
+
+                if(!pName || qty <= 0) return;
+
+                const key = pName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                const pStockRef = state.products[key];
+
+                if(!pStockRef) {
+                    stockCheckOverageFlag = true;
+                    descriptiveOverageMessageError = `Product descriptor identity '${pName}' doesn't point to an active indexed item.`;
+                    return;
+                }
+
+                let structuralPcsDemandValue = qty;
+                if(pStockRef.unit === 'Carton' || pStockRef.unit === 'Box') {
+                    structuralPcsDemandValue = qty * pStockRef.eachPieces;
+                } else if(pStockRef.unit === 'KG') {
+                    structuralPcsDemandValue = qty * 1000;
+                }
+
+                if(pStockRef.qtyAvailable < structuralPcsDemandValue) {
+                    stockCheckOverageFlag = true;
+                    let availNormalized = pStockRef.unit === 'KG' ? (pStockRef.qtyAvailable/1000).toFixed(3) + ' KG' : pStockRef.qtyAvailable + ' Pcs';
+                    descriptiveOverageMessageError = `Stock out threshold overage! '${pStockRef.name}' demands ${qty} ${unit} but storage index register contains only ${availNormalized}. Operation halted.`;
+                    return;
+                }
+
+                dispatchItemsAllocationsList.push({
+                    name: pStockRef.name, key: key, unit: unit, qtyDispatched: qty, rawPcsSubtrahendValue: structuralPcsDemandValue
+                });
+            });
+
+            if(stockCheckOverageFlag) { alert(descriptiveOverageMessageError); return; }
+            if(dispatchItemsAllocationsList.length === 0) { alert("Layout empty: Complete input line elements properties."); return; }
+
+            dispatchItemsAllocationsList.forEach(alloc => {
+                state.products[alloc.key].qtyAvailable -= alloc.rawPcsSubtrahendValue;
+            });
+
+            const stockOutPayloadDocumentRecord = {
+                id: 'so_' + Date.now(), memoId: memoId, date: dispatchDate, items: dispatchItemsAllocationsList
+            };
+
+            state.stockouts.push(stockOutPayloadDocumentRecord);
+            persistState();
+
+            triggerComputerizedReceiptDisplay(stockOutPayloadDocumentRecord, 'STOCK OUT FREIGHT DISPATCH MEMO MANIFEST');
+            openRoom('room-home');
+        }
+
+        function renderStockOutHistoryRootRoom() {
+            const container = document.getElementById('stockout-history-root');
+            container.innerHTML = '';
+            document.getElementById('stockout-hist-title').innerText = "Chronological Dispatch Logs";
+
+            let datesMap = {};
+            state.stockouts.forEach(s => datesMap[s.date] = true);
+            let sortedDates = Object.keys(datesMap).sort().reverse();
+
+            sortedDates.forEach(dKey => {
+                let count = state.stockouts.filter(s => s.date === dKey).length;
+                container.innerHTML += `
+                    <div class="nav-card" onclick="drillDownStockOutDatesToMemosList('${dKey}')">
+                        <div>
+                            <h4>Timeline Dispatch Day: ${dKey}</h4>
+                            <p>Contains indexing files tracking ${count} cargo outbound dispatch records</p>
+                        </div>
+                        <i class="fas fa-truck-ramp-box" style="color:var(--danger);"></i>
+                    </div>
+                `;
+            });
+
+            if(sortedDates.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:var(--text-muted); margin-top:20px;">Outbound dispatch memos log is empty.</p>`;
+            }
+        }
+
+        function drillDownStockOutDatesToMemosList(dKey) {
+            const container = document.getElementById('stockout-history-root');
+            document.getElementById('stockout-hist-title').innerText = `Memos listed on: ${dKey}`;
+            container.innerHTML = `<button class="btn btn-primary" style="margin-bottom:15px;" onclick="renderStockOutHistoryRootRoom()"><i class="fas fa-chevron-left"></i> Return back to periods index</button>`;
+
+            let matches = state.stockouts.filter(s => s.date === dKey);
+            matches.forEach(memo => {
+                container.innerHTML += `
+                    <div class="nav-card" onclick="triggerStockOutReceiptDisplay('${memo.id}')">
+                        <div>
+                            <h4>Manifest Reference Ref: ${memo.memoId}</h4>
+                            <p>Total lines items records: ${memo.items.length}</p>
+                        </div>
+                        <i class="fas fa-file-invoice" style="color:var(--text-muted);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function triggerStockOutReceiptDisplay(id) {
+            let memo = state.stockouts.find(s => s.id === id);
+            if(memo) triggerComputerizedReceiptDisplay(memo, 'STOCK OUT FREIGHT DISPATCH MEMO MANIFEST');
+        }
+
+        // ==========================================
+        // ROOM 6: GLOBAL CONFIGURATION ENGINE LOGICS
+        // ==========================================
+        function processBrandingLogoUpload() {
+            const fileInput = document.getElementById('cfg-logo');
+            const file = fileInput.files[0];
+            if(!file) return;
+
+            const readerEngine = new FileReader();
+            readerEngine.onloadend = function() { state.profile.logo = readerEngine.result; };
+            readerEngine.readAsDataURL(file);
+        }
+
+        function commitConfigurationProfile() {
+            state.profile.companyName = document.getElementById('cfg-comp-name').value.trim() || "StockWise Pro";
+            state.profile.ownerName = document.getElementById('cfg-owner-name').value.trim() || "Authorized Owner";
+            state.profile.phone = document.getElementById('cfg-phone').value.trim() || "";
+            state.profile.email = document.getElementById('cfg-email').value.trim() || "";
+            state.profile.currency = document.getElementById('cfg-currency').value.trim() || "Rs";
+
+            persistState();
+            alert("Application settings global runtime profiles re-aligned securely.");
+            openRoom('room-home');
+        }
+
+        function triggerSystemStateExport() {
+            let stateDataStringURI = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            let anchorElement = document.createElement('a');
+            anchorElement.setAttribute("href", stateDataStringURI);
+            anchorElement.setAttribute("download", `Enterprise_ERP_Database_Backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(anchorElement);
+            anchorElement.click();
+            anchorElement.remove();
+        }
+
+        function triggerEntireSystemPurge() {
+            let challengeInput = prompt("CRITICAL SYSTEM ALERT WARNING: Type security credential '1234' to verify compliance access control authorization:");
+            if(challengeInput === '1234') {
+                localStorage.removeItem('stockwise_pro_core_db');
+                alert("Persistent local database stores unlinked successfully. Reloading context.");
+                window.location.reload();
+            } else {
+                alert("Security block mismatch rejection.");
+            }
+        }
+    </script>
+</body>
+</html>
