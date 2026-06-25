@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hal Al Dar Restaurant - Kitchen Sender</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkhhbCBBbCBEYXIgS2l0Y2hlbiIsCiAgInNob3J0X25hbWUiOiAiS2l0Y2hlbiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZmRmYWZiIiwKICAidGhlbWVfY29sb3IiOiAiIzgwMDAyMCIKfQ==">
+    <style>
+        :root { --primary: #800020; --accent: #27ae60; --danger: #c0392b; --bg: #fdfafb; --warning: #d35400; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
+        .app-container { max-width: 480px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(128,0,32,0.15); box-sizing: border-box; }
+        .company-header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+        .company-logo-box { display: inline-block; background: var(--primary); color: white; padding: 8px 18px; border-radius: 50px; font-weight: bold; font-size: 20px; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 8px; }
+        .company-title-en { font-size: 18px; font-weight: 800; color: var(--primary); letter-spacing: 1px; margin: 0; }
+        h3 { text-align: center; color: var(--primary); margin-top: 0; }
+        .page { display: none; } .active { display: block; }
+        button { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
+        .btn-main { background: var(--primary); }
+        .btn-add { background: var(--accent); }
+        .btn-back { background: #7f8c8d; }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); }
+        .btn-view { background: #3498db; padding: 6px 12px; font-size: 12px; width: auto; display: inline-block; margin: 0; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        input:focus { border-color: var(--primary); outline: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 13px; }
+        th { background: #f8f9fa; color: var(--primary); }
+        #sugList { border: 1px solid #ddd; border-radius: 8px; max-height: 160px; overflow-y: auto; background: white; margin-top: -5px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .sug-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; text-align: left; }
+        .sug-item:hover { background: #fdf0f2; }
+        #receiptModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto; padding: 20px 10px; box-sizing: border-box; }
+        .receipt-body { background: #fff; max-width: 400px; margin: auto; padding: 25px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); font-family: 'Courier New', Courier, monospace; }
+        .receipt-dash { border-top: 1px dashed #000; margin: 10px 0; }
+        .badge { background: #fdf0f2; color: var(--primary); padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px; }
+        .date-folder { background: #f9f2f4; padding: 12px 15px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid var(--primary); cursor: pointer; font-weight: bold; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .date-folder:hover { background: #f5e6ea; }
+        .folder-content { display: none; padding: 5px 0 10px 10px; margin-bottom: 15px; border-left: 2px dashed #bdc3c7; }
+        .hist-card-mini { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 6px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* New Status Badges inside receipts or lists */
+        .status-stamp { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 14px; display: inline-block; margin-top: 5px; text-transform: uppercase; }
+        .status-pending { background: #fadbd8; color: #c0392b; border: 1px solid #c0392b; }
+        .status-delivered { background: #d4efdf; color: #27ae60; border: 1px solid #27ae60; }
+        .delivered-folder { background: #e8f8f5; border-left: 5px solid #27ae60; }
+        .delivered-folder:hover { background: #d1f2eb; }
+
+        /* Splash Screen (Wallpaper) Styles */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #600018 0%, #800020 50%, #4a000e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            opacity: 1;
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            text-align: center;
+        }
+        .splash-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            max-width: 380px;
+            width: 85%;
+            box-sizing: border-box;
+        }
+        .splash-welcome {
+            font-size: 32px;
+            color: #fdf0f2;
+            margin: 0 0 20px 0;
+            font-weight: 500;
+            font-family: 'Amiri', 'Traditional Arabic', 'Georgia', serif;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .splash-name-container {
+            background: #fff8f9;
+            border: 2px dashed #d4af37;
+            padding: 15px 30px;
+            border-radius: 16px;
+            display: inline-block;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 6px rgba(128,0,32,0.1);
+        }
+        .splash-main-name {
+            font-size: 46px;
+            color: #800020;
+            margin: 0;
+            font-weight: 900;
+            font-family: 'Amiri', 'Traditional Arabic', 'Georgia', serif;
+        }
+        .splash-footer-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin: 0 0 30px 0;
+            text-transform: uppercase;
+        }
+        .splash-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .splash-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #d4af37;
+            border-radius: 50%;
+            animation: splashSpin 0.8s linear infinite;
+        }
+        .splash-loading-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+        }
+        @keyframes splashSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="splashScreen">
+    <div class="splash-card">
+        <h1 class="splash-welcome">أهلاً وسهلاً</h1>
+        <div class="splash-name-container">
+            <h2 class="splash-main-name">يا مروان</h2>
+        </div>
+        <p class="splash-footer-text">Hal Al Dar Restaurant<br><small style="font-size:10px; opacity:0.8;">Kitchen Sender</small></p>
+        <div class="splash-loader">
+            <div class="splash-spinner"></div>
+            <span class="splash-loading-text">Loading...</span>
+        </div>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="company-header">
+        <div class="company-logo-box">مطعم هل الدار</div>
+        <div class="company-title-en">HAL AL DAR RESTAURANT</div>
+    </div>
+
+    <div id="dashboard" class="page active">
+        <button class="btn-main" onclick="nav('products')">All Products (جميع المنتجات)</button>
+        <button class="btn-main" onclick="nav('gen-pod')">Generate POD (إنشاء إيصال)</button>
+        <button class="btn-warning" onclick="nav('pending-list')">Pending PODs (الإيصالات المعلقة)</button>
+        <button class="btn-add" onclick="nav('delivered-list')">Delivered PODs (الإيصالات المستلمة)</button>
+        <button class="btn-main" onclick="nav('history')">History Logs (السجل العام)</button>
+        
+        <div style="margin-top:20px; padding:15px; background:#fdf0f2; border-radius:12px; border: 1px solid #f5e6ea;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                <strong style="color: var(--danger);">🔴 Total Pending Today:</strong>
+                <span class="badge" id="dashPendingCount" style="background: var(--danger); color: white;">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color: var(--accent);">🟢 Total Delivered Today:</strong>
+                <span class="badge" id="dashDeliveredCount" style="background: var(--accent); color: white;">0</span>
+            </div>
+        </div>
+    </div>
+    <div id="products" class="page">
+        <button class="btn-back" onclick="nav('dashboard')">← Back</button>
+        <h3>Product Dictionary</h3>
+        <input type="text" id="enName" placeholder="Type English Name..." oninput="translateProduct()">
+        <input type="text" id="arName" placeholder="الاسم العربي">
+        <button class="btn-add" onclick="saveProduct()">Add & Save Product</button>
+        <div style="max-height: 250px; overflow-y: auto; margin-top: 15px;"><table id="prodTable"></table></div>
+    </div>
+
+    <div id="gen-pod" class="page">
+        <button class="btn-back" onclick="nav('dashboard')">← Back</button>
+        <h3>Create New POD</h3>
+        <input type="text" id="podInput" placeholder="Start typing product name..." oninput="showSuggestions()" autocomplete="off">
+        <div id="sugList" style="display:none;"></div>
+        <input type="number" id="qty" placeholder="Quantity (الكمية)">
+        <select id="unit">
+            <option value="Carton">Carton (كرتون)</option>
+            <option value="Pieces">Pieces (قطعة)</option>
+            <option value="KG">KG (كيلوجرام)</option>
+        </select>
+        <button class="btn-add" onclick="addToPOD()">+ Add Item to List</button>
+        <table id="podTable"></table>
+        <button class="btn-main" style="background:#2980b9; margin-top:20px;" onclick="finalizePOD()">Generate Final Receipt</button>
+    </div>
+
+    <div id="pending-list" class="page">
+        <button class="btn-back" onclick="nav('dashboard')">← Back</button>
+        <h3>Pending PODs (معلق)</h3>
+        <div id="pendingContent" style="margin-top:15px; max-height:400px; overflow-y:auto;"></div>
+    </div>
+
+    <div id="delivered-list" class="page">
+        <button class="btn-back" onclick="nav('dashboard')">← Back</button>
+        <h3>Delivered PODs (تم التسليم)</h3>
+        <div id="deliveredContent" style="margin-top:15px; max-height:400px; overflow-y:auto;"></div>
+    </div>
+
+    <div id="history" class="page">
+        <button class="btn-back" onclick="nav('dashboard')">← Back</button>
+        <h3>Saved POD History</h3>
+        <button class="btn-danger" style="padding:8px; font-size:12px; width:auto; float:right;" onclick="clearAllHistory()">Clear All History</button>
+        <div style="clear:both;"></div>
+        <div id="histContent" style="margin-top:15px; max-height:400px; overflow-y:auto;"></div>
+    </div>
+</div>
+
+<div id="receiptModal">
+    <div class="receipt-body">
+        <div style="text-align:center; font-weight:bold; font-size:16px;">HAL AL DAR RESTAURANT</div>
+        <div style="text-align:center; font-weight:bold; font-size:15px;">مطعم هل الدار</div>
+        <div style="text-align:center; font-size:11px; margin-bottom:5px; color:#555;">OFFICIAL POD RECEIPT</div>
+        <div id="recMeta" style="font-size:11px; margin-bottom:5px;"></div>
+        
+        <div style="text-align: center; margin-bottom: 10px;">
+            <span id="recStatusStamp" class="status-stamp">PENDING</span>
+        </div>
+
+        <div class="receipt-dash"></div>
+        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:12px;"><span>ITEM / CODE</span><span>QTY</span></div>
+        <div class="receipt-dash"></div>
+        <div id="recItems" style="font-size:12px; line-height:1.6;"></div>
+        <div class="receipt-dash"></div>
+        <div style="text-align:center; font-size:11px; margin-top:10px; font-weight:bold;">*** THANK YOU / شكراً لكم ***</div>
+        
+        <div id="receiptActionBox" style="margin-top: 15px;"></div>
+
+        <div style="margin-top:15px;">
+            <button style="background:#25d366;" onclick="shareViaWhatsApp()">Share via WhatsApp</button>
+            <button style="background:#3498db;" onclick="window.print()">Print Receipt</button>
+            <button class="btn-danger" onclick="closeReceiptWindow()">Close Window</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 162 ITEMS COMPLETE DICTIONARY PRESERVED HIERARCHY
+    const megaDictionary = {"chick peas": "حمص", "seafood sauce 500 ml": "صلصة المأكولات البحرية 500 مل", "jana labnan": "جنى لبنان", "jalapeno pepper": "فلفل هالبينو", "paprika powder": "بابريكا بودرة", "meat masala": "بهارات لحم", "chicken stock maggi powder": "مرقة دجاج ماجي بودرة", "nutella": "نوتيلا", "srircha hot chilli sauce": "صلصة سيراتشا الحارة", "rose mary": "إكليل الجبل (روزماري)", "romance sorse": "صلصة رومانسي", "french source": "صلصة فرنسية", "crystal hot source big": "شطة كريستال كبيرة", "crystal hot source small": "شطة كريستال صغيرة", "tuna big": "تونة كبيرة", "tuna small": "تونة صغيرة", "custard powder": "بودرة كاسترد", "baking powder": "بكينج بودر", "vanilla": "فانيليا", "red and white": "أحمر وأبيض", "bicarbonate of soda": "بيكربونات الصودا", "mint powder": "نعناع بودرة", "madras curry powder": "مسحوق كاري مدراس", "hot red chilli powder": "فلفل أحمر حار بودرة", "lemon salt": "ملح الليمون", "ajinomoto": "أجيموتو", "yellow colour powder for rice": "صفار الزعفران (لون أرز)", "zaa ter": "زعتر", "sanobar": "صنوبر", "onion powder": "بصل بودرة", "white sam sum": "سمسم أبيض", "black seed": "الحبة السوداء", "cardamom": "هيل", "coriander seed 1kg": "كزبرة حب 1 كيلو", "jareesh": "جريش", "harish": "هريس", "ginger powder": "زنجبيل بودرة", "garlic powder": "ثوم بودرة", "cinnamon powder": "قرفة بودرة", "cinnamon sticks": "عيدان قرفة", "white paper powder": "فلفل أبيض بودرة", "cooking salt": "ملح طعام", "safe instant khamira": "خميرة فورية", "bread powder": "مسحوق الخبز (بقصمات)", "bulgur yellow fine royal taj": "برغل أصفر ناعم", "macaroni": "معكرونة", "fasulia heinz beanz": "فاصوليا هاينز", "salsa vaidya (tomato paste)": "صلصة طماطم", "tahina almona": "طحينة المونة", "olive oil": "زیت زیتون", "vegetable cooking oil": "زيت طبخ نباتي", "sunflower oil": "زيت دوار الشمس", "cow ghee": "سمن بقري", "vegetable ghee (samna)": "سمن نباتي", "vinegar": "خل", "green olive slice": "شرائح زيتون أخضر", "black olive slice": "شرائح زيتون أسود", "tomato sauce jumbo": "صلصة طماطم جامبو", "nido milk powder": "حليب نيدو بودرة", "tea milk rainbow": "حليب شاي رينبو", "red liberty (patti)": "شاي ليبيرتي أحمر (فرط)", "kbous tea": "شاي الكبوس", "tea cup lead": "غطاء كوب شاي", "tea cup": "كوب شاي", "hamsa plate ro 24": "صحن همسة مقاس 24", "ham sab plate ro 16": "صحن همسة مقاس 16", "cling film": "تغليف بلاستيك (نايلون)", "glass cleaner": "منظف زجاج", "brown flour": "دقيق أسمر", "tissue box": "علبة مناديل", "max roll": "ماكسي رول", "face mask white": "كمامات بيضاء", "face mask black": "كمامات سوداء", "gloves": "قفازات", "baking gloves": "قفازات خبز", "aluminium foil multipurpose": "قصدير ألومنيوم", "baking paper": "ورق زبدة (خبز)", "fava split foul": "فول مجروش", "dishwashing sope": "صابون غسيل صحون", "dishwashing silk jali": "سلك غسيل صحون", "dishwashing sponch fome": "إسفنج غسيل صحون", "farsh cleaner": "منظف فرش / أرضيات", "kinza cola": "كينزا كولا", "kinza cola diet": "كينزا كولا دايت", "kinza lemon": "كينزا ليمون", "kinza lemon zero sure": "كينزا ليمون بدون sugar", "kinza citrus": "كينزا سيتراس (حمضيات)", "kinza portugal (orang)": "كينزا برتقال", "water": "ماء", "sunshine juice": "عصير صن شاين", "tomato": "طماطم", "luttas": "خس", "lemon": "ليمون", "cucumber": "خيار", "carrot": "جزر", "green chily": "فلفل أخضر حار", "green capsicum": "فلفل بارد أخضر", "red capsicum": "فلفل بارد أحمر", "yellow capsicum": "فلفل بارد أصفر", "mint": "نعناع طازج", "coriander": "كزبرة خضراء", "parsly": "بقدونس", "ginger": "زنجبيل طازج", "garlic": "ثوم طازج", "red onion": "بصل أحمر", "white onion": "بصل أبيض", "potato": "بطاطس", "eggplant": "باذنجان", "orange": "برتقال", "ice berg": "خس آيسبرغ", "kiwi frout": "كيوي", "dill": "شبت", "pomegranate": "رمان", "long chilli": "فلفل حار طويل", "red long chilli": "فلفل أحمر طويل", "green lemon": "ليمون أخضر", "palak": "سبانخ", "rocca": "جرجير", "creem cheese": "جبنة كريمية", "fresh creem": "قشطة طازجة", "hallomi cheese": "جبنة حلومي", "pizza cheese": "جبنة بيتزا (موزاريلا)", "white cheddar chees": "جبنة تشيدر بيضاء", "maild cheddar chees": "جبنة تشيدر معتدلة", "beef paproni": "ببروني بقري", "yellow mustard": "خردل أصفر", "heinz cheese sauce": "صلصة جبنة هاينز", "bbq sauce": "صلصة باربكيو", "ranch dressing": "تتبيلة رانش", "red chily sauce 5 ltr": "صلصة شطة حمراء 5 لتر", "red chilly sauce 20 itr": "صلصة شطة حمراء 20 لتر", "premium date syrup": "دبس تمر فاخر", "soya sauce": "صلصة صويا", "abu al-walid cheese": "جبنة أبو الوليد", "cooking creem": "كريمة طبخ", "egg": "بيض", "youghurt": "زبادي / لبن", "ghajoor": "خضار / مواد أخرى", "chicken": "دجاج", "chicken brest": "صدور دجاج", "chicken shawarma": "شاورما دجاج", "ferozin chips": "بطاطس مقلية مجمدة", "sandwich box small": "علبة سندويش صغيرة", "sandwich box big": "علبة سندويش كبيرة", "gurs box": "علبة قرص", "halaldar box medium": "علبة حلويات وسط", "halaldar box big": "علبة حلويات كبيرة", "baldia kees black big": "أكياس بلدية أسود كبير", "baldia kees black medium": "أكياس بلدية أسود وسط", "baldia kees white small": "أكياس بلدية أبيض صغير", "rice plate single apartment": "صحن أرز مقسم (وجبة واحدة)", "rice plate triple apartment": "صحن أرز ثلاث خانات (وجبة ثلاثية)", "alu- plate 6550": "صحون ألومنيوم 6550", "alu- plate 6586": "صحون ألومنيوم 6586", "alu-plate 65180": "صحون ألومنيوم 65180", "alu - plate 65220": "صحون ألومنيوم 65220", "alu- plate 83190": "صحون ألومنيوم 83190", "alu - plate 83185": "صحون ألومنيوم 83185", "alu -plate 1135": "صحون ألومنيوم 1135", "alu-plate 1120": "صحون ألومنيوم 1120", "alu-plate 8389": "صحون ألومنيوم 8389"};
+
+    let products = JSON.parse(localStorage.getItem('sw_products')) || [];
+    
+    // Separate Lists Architecture
+    let pendingPODs = JSON.parse(localStorage.getItem('sw_pending_pods')) || [];
+    let deliveredPODs = JSON.parse(localStorage.getItem('sw_delivered_pods')) || [];
+    let history = JSON.parse(localStorage.getItem('sw_history')) || [];
+    
+    let podItems = [];
+    let activeReceiptData = null;
+    let currentReceiptType = ''; // tracks originating environment ('pending', 'delivered', 'history')
+    let currentReceiptGlobalIdx = null; // targets actual data array row
+    
+    const firebaseUrl = "https://halaldar-store-default-rtdb.firebaseio.com/demands.json?key=AIzaSyBO3gBm0Bz9lKrZTGZjE6yCfQvea3lAdr4";
+
+    if (products.length < Object.keys(megaDictionary).length) {
+        products = [];
+        let keys = Object.keys(megaDictionary);
+        for(let i = 0; i < keys.length; i++){
+            products.push({ code: 'SW-' + (1001 + i), en: keys[i].toUpperCase(), ar: megaDictionary[keys[i]] });
+        }
+        localStorage.setItem('sw_products', JSON.stringify(products));
+    }
+
+    function nav(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'products') renderProducts();
+        if(id === 'pending-list') renderPendingList();
+        if(id === 'delivered-list') renderDeliveredList();
+        if(id === 'history') renderHistory();
+        if(id === 'dashboard') updateDashboard();
+    }
+
+    function translateProduct() {
+        let en = document.getElementById('enName').value.toUpperCase().trim();
+        let found = products.find(p => p.en === en);
+        document.getElementById('arName').value = found ? found.ar : (megaDictionary[en.toLowerCase()] || "");
+    }
+
+    function saveProduct() {
+        let en = document.getElementById('enName').value.toUpperCase().trim();
+        let ar = document.getElementById('arName').value.trim();
+        if(!en || !ar) return alert("Please enter both English and Arabic names!");
+        if(products.some(p => p.en === en)) return alert("This product already exists!");
+        products.push({ code: 'SW-' + Math.floor(1000 + Math.random() * 9000), en, ar });
+        localStorage.setItem('sw_products', JSON.stringify(products));
+        document.getElementById('enName').value = ''; document.getElementById('arName').value = '';
+        alert("Product Successfully Saved!"); renderProducts();
+    }
+
+    function renderProducts() {
+        let tbl = document.getElementById('prodTable');
+        if(products.length === 0) { tbl.innerHTML = "<tr><td>No products added yet.</td></tr>"; return; }
+        tbl.innerHTML = "<tr><th>Code</th><th>English</th><th>Arabic</th></tr>" + products.map(p => `<tr><td><strong>${p.code}</strong></td><td>${p.en}</td><td>${p.ar}</td></tr>`).join('');
+    }
+
+    function showSuggestions() {
+        let val = document.getElementById('podInput').value.toLowerCase().trim();
+        let list = document.getElementById('sugList');
+        if(!val) { list.style.display = "none"; return; }
+        let filtered = products.filter(p => p.en.toLowerCase().includes(val) || p.code.toLowerCase().includes(val));
+        if(filtered.length === 0) { list.style.display = "none"; return; }
+        list.innerHTML = filtered.map(p => `<div class="sug-item" onclick="selectProd('${p.en.replace(/'/g, "\\'")}')"><strong>${p.code}</strong> - ${p.en} (${p.ar})</div>`).join('');
+        list.style.display = "block";
+    }
+
+    function selectProd(name) { document.getElementById('podInput').value = name; document.getElementById('sugList').style.display = "none"; }
+
+    function addToPOD() {
+        let name = document.getElementById('podInput').value.toUpperCase().trim();
+        let qty = document.getElementById('qty').value;
+        let unit = document.getElementById('unit').value;
+        if(!name || !qty || qty <= 0) return alert("Please select a valid product and quantity!");
+        let item = products.find(p => p.en.toUpperCase() === name);
+        if(!item) return alert("Product not found in Dictionary!");
+        podItems.push({ code: item.code, en: item.en, ar: item.ar, qty: qty, unit: unit });
+        document.getElementById('podInput').value = ''; document.getElementById('qty').value = '';
+        renderPODTable();
+    }
+
+    function renderPODTable() {
+        let tbl = document.getElementById('podTable');
+        if(podItems.length === 0) { tbl.innerHTML = ""; return; }
+        tbl.innerHTML = "<tr><th>Code</th><th>Items Description</th><th>Qty</th><th>Unit</th></tr>" + podItems.map(i => `<tr><td>${i.code}</td><td>${i.en}<br><small>${i.ar}</small></td><td>${i.qty}</td><td>${i.unit}</td></tr>`).join('');
+    }
+
+    // Phase 1 Workflow Transition: Save onto Pending Matrix Only
+    function finalizePOD() {
+        if(podItems.length === 0) return alert("Your list is empty!");
+        let invNo = 'INV-' + Math.floor(100000 + Math.random() * 900000);
+        let dateTime = new Date().toLocaleString();
+        let dateOnly = new Date().toLocaleDateString();
+        
+        activeReceiptData = { invNo, dateTime, dateOnly, status: "Pending", items: [...podItems] };
+        
+        pendingPODs.push(activeReceiptData);
+        localStorage.setItem('sw_pending_pods', JSON.stringify(pendingPODs));
+        
+        fetch(firebaseUrl, {
+            method: "POST",
+            body: JSON.stringify(activeReceiptData),
+            headers: { "Content-Type": "application/json" }
+        })
+        .then(() => {
+            currentReceiptType = 'pending';
+            currentReceiptGlobalIdx = pendingPODs.length - 1;
+            showReceiptModal(activeReceiptData);
+            podItems = []; document.getElementById('podTable').innerHTML = ""; updateDashboard();
+        })
+        .catch(() => {
+            currentReceiptType = 'pending';
+            currentReceiptGlobalIdx = pendingPODs.length - 1;
+            showReceiptModal(activeReceiptData);
+            podItems = []; document.getElementById('podTable').innerHTML = ""; updateDashboard();
+            alert("Saved Locally as Pending! (Failed online sync)");
+        });
+    }
+
+    function showReceiptModal(data) {
+        activeReceiptData = data;
+        document.getElementById('recMeta').innerHTML = "INV NO: " + data.invNo + "<br>DATE  : " + data.dateTime;
+        document.getElementById('recItems').innerHTML = data.items.map(i => `<div style="display:flex; justify-content:space-between;"><span>${i.en} (${i.ar})<br><small style="font-size:10px; color:#555;">Code: ${i.code}</small></span><span>${i.qty} ${i.unit}</span></div>`).join('<div style="margin:5px 0;"></div>');
+        
+        let stamp = document.getElementById('recStatusStamp');
+        let actionBox = document.getElementById('receiptActionBox');
+        actionBox.innerHTML = ""; 
+
+        if(data.status === "Pending") {
+            stamp.innerText = "PENDING";
+            stamp.className = "status-stamp status-pending";
+            // Done/Delivered trigger mechanism
+            actionBox.innerHTML = `<button style="background:var(--accent);" onclick="processDeliveryTransition()">✔ Mark as Delivered</button>`;
+        } else {
+            stamp.innerText = "DELIVERED";
+            stamp.className = "status-stamp status-delivered";
+        }
+
+        document.getElementById('receiptModal').style.display = 'block';
+    }
+
+    // Phase 2 Transition Logic: Pending -> Delivered List + Main History Sync
+    function processDeliveryTransition() {
+        if(currentReceiptType !== 'pending' || currentReceiptGlobalIdx === null) return;
+        
+        let targetItem = pendingPODs[currentReceiptGlobalIdx];
+        if(!targetItem) return;
+
+        // Mutate properties
+        targetItem.status = "Delivered";
+
+        // Push to appropriate storage objects
+        deliveredPODs.push(targetItem);
+        history.push(targetItem);
+
+        // Splice/Clean up out of original matrix arrays
+        pendingPODs.splice(currentReceiptGlobalIdx, 1);
+
+        // Sync local storage states
+        localStorage.setItem('sw_pending_pods', JSON.stringify(pendingPODs));
+        localStorage.setItem('sw_delivered_pods', JSON.stringify(deliveredPODs));
+        localStorage.setItem('sw_history', JSON.stringify(history));
+
+        alert("POD successfully marked as Delivered!");
+        document.getElementById('receiptModal').style.display = 'none';
+        activeReceiptData = null;
+        currentReceiptGlobalIdx = null;
+        
+        // Refresh and route back gracefully
+        updateDashboard();
+        nav('dashboard');
+    }
+
+    function shareViaWhatsApp() {
+        if(!activeReceiptData) return;
+        let statusEmoji = activeReceiptData.status === "Pending" ? "🔴" : "🟢";
+        let text = "*HAL AL DAR RESTAURANT*\n*مطعم هل الدار*\n-----------------------------\n*Invoice:* " + activeReceiptData.invNo + "\n*Status:* " + statusEmoji + " " + activeReceiptData.status.toUpperCase() + "\n*Date:* " + activeReceiptData.dateTime + "\n-----------------------------\n";
+        activeReceiptData.items.forEach((i, idx) => { text += (idx+1) + ". " + i.en + " (" + i.ar + ")\n   *Qty:* " + i.qty + " " + i.unit + "  [" + i.code + "]\n\n"; });
+        text += "-----------------------------\nThank You / شكراً لكم";
+        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), '_blank');
+    }
+
+    function closeReceiptWindow() { 
+        document.getElementById('receiptModal').style.display = 'none'; 
+        activeReceiptData = null; 
+        currentReceiptGlobalIdx = null;
+    }
+
+    function renderPendingList() {
+        let content = document.getElementById('pendingContent');
+        if(pendingPODs.length === 0) { content.innerHTML = "<p style='text-align:center; color:#999;'>No pending orders logged.</p>"; return; }
+        
+        let grouped = {};
+        pendingPODs.forEach((h, idx) => { if(!grouped[h.dateOnly]) grouped[h.dateOnly] = []; grouped[h.dateOnly].push({ data: h, idx: idx }); });
+        
+        let html = "";
+        Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach((date, fIdx) => {
+            html += `<div class="date-folder" onclick="toggleFolder('p-folder-${fIdx}')"><span>📅 Folder: ${date}</span><span class="badge" style="background:var(--danger); color:white;">${grouped[date].length} Pending</span></div><div id="p-folder-${fIdx}" class="folder-content">`;
+            grouped[date].forEach(item => {
+                let h = item.data; let timeOnly = h.dateTime.includes(',') ? h.dateTime.split(',')[1] : h.dateTime;
+                html += `<div class="hist-card-mini"><div><strong>${h.invNo}</strong><br><span style="font-size:11px; color:#c0392b;">🕒 ${timeOnly} (${h.items.length} items)</span></div><div><button class="btn-view" onclick="openActiveReceipt('pending', ${item.idx})">View</button></div></div>`;
+            });
+            html += `</div>`;
+        });
+        content.innerHTML = html;
+    }
+
+    function renderDeliveredList() {
+        let content = document.getElementById('deliveredContent');
+        if(deliveredPODs.length === 0) { content.innerHTML = "<p style='text-align:center; color:#999;'>No delivered records logs found.</p>"; return; }
+        
+        let grouped = {};
+        deliveredPODs.forEach((h, idx) => { if(!grouped[h.dateOnly]) grouped[h.dateOnly] = []; grouped[h.dateOnly].push({ data: h, idx: idx }); });
+        
+        let html = "";
+        Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach((date, fIdx) => {
+            html += `<div class="date-folder delivered-folder" onclick="toggleFolder('d-folder-${fIdx}')"><span>📅 Folder: ${date}</span><span class="badge" style="background:var(--accent); color:white;">${grouped[date].length} Delivered</span></div><div id="d-folder-${fIdx}" class="folder-content">`;
+            grouped[date].forEach(item => {
+                let h = item.data; let timeOnly = h.dateTime.includes(',') ? h.dateTime.split(',')[1] : h.dateTime;
+                html += `<div class="hist-card-mini" style="border-left: 3px solid var(--accent);"><div><strong>${h.invNo}</strong><br><span style="font-size:11px; color:#27ae60;">🕒 ${timeOnly} (${h.items.length} items)</span></div><div><button class="btn-view" style="background:var(--accent);" onclick="openActiveReceipt('delivered', ${item.idx})">View</button></div></div>`;
+            });
+            html += `</div>`;
+        });
+        content.innerHTML = html;
+    }
+
+    function renderHistory() {
+        let content = document.getElementById('histContent');
+        if(history.length === 0) { content.innerHTML = "<p style='text-align:center; color:#999;'>No main history logs found.</p>"; return; }
+        
+        let grouped = {};
+        history.forEach((h, idx) => { if(!grouped[h.dateOnly]) grouped[h.dateOnly] = []; grouped[h.dateOnly].push({ data: h, idx: idx }); });
+        
+        let html = "";
+        Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).forEach((date, fIdx) => {
+            html += `<div class="date-folder" onclick="toggleFolder('h-folder-${fIdx}')"><span>📅 Folder: ${date}</span><span class="badge" style="background: var(--primary); color:white;">${grouped[date].length} POD(s)</span></div><div id="h-folder-${fIdx}" class="folder-content">`;
+            grouped[date].forEach(item => {
+                let h = item.data; let timeOnly = h.dateTime.includes(',') ? h.dateTime.split(',')[1] : h.dateTime;
+                html += `<div class="hist-card-mini"><div><strong>${h.invNo}</strong><br><span style="font-size:11px; color:#666;">🕒 ${timeOnly} (${h.items.length} items)</span></div><div><button class="btn-view" onclick="openActiveReceipt('history', ${item.idx})">View</button></div></div>`;
+            });
+            html += `</div>`;
+        });
+        content.innerHTML = html;
+    }
+
+    function openActiveReceipt(type, index) {
+        currentReceiptType = type;
+        currentReceiptGlobalIdx = index;
+        if(type === 'pending') showReceiptModal(pendingPODs[index]);
+        if(type === 'delivered') showReceiptModal(deliveredPODs[index]);
+        if(type === 'history') showReceiptModal(history[index]);
+    }
+
+    function toggleFolder(id) { let f = document.getElementById(id); f.style.display = (f.style.display === "block") ? "none" : "block"; }
+    function clearAllHistory() { if(confirm("Delete ALL records permanently?")) { history = []; pendingPODs = []; deliveredPODs = []; localStorage.setItem('sw_history', JSON.stringify(history)); localStorage.setItem('sw_pending_pods', JSON.stringify(pendingPODs)); localStorage.setItem('sw_delivered_pods', JSON.stringify(deliveredPODs)); renderHistory(); updateDashboard(); } }
+
+    function updateDashboard() {
+        let today = new Date().toLocaleDateString();
+        
+        let todaysPending = pendingPODs.filter(h => h.dateOnly === today);
+        let todaysDelivered = deliveredPODs.filter(h => h.dateOnly === today);
+        
+        document.getElementById('dashPendingCount').innerText = todaysPending.length;
+        document.getElementById('dashDeliveredCount').innerText = todaysDelivered.length;
+    }
+    updateDashboard();
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGUpIHt9KTs=');
+    }
+
+    // Splash Screen Timeout Framework Execution (3 Seconds)
+    function runSplashScreen() {
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            setTimeout(() => {
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 600);
+            }, 3000);
+        }
+    }
+    runSplashScreen();
+</script>
+</body>
+</html>
