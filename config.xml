@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.arappcreator.storekeeper" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>store keeper</name>
+<widget id="com.arappcreator.stockpro" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>stock pro</name>
     <description>digital khata Application</description>
     <author email="dev@arappcreator.com" href="http://arappcreator.com">AR App Creator</author>
     
