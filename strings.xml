@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Khata</string>
+    <string name="btn_print">Print Invoice</string>
+    <string name="btn_save_pdf">Save as PDF</string>
+    <string name="btn_share">Share Invoice</string>
+</resources>

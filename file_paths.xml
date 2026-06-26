@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider path configuration for KhataPrintManager.
+
+    Maps internal app storage (context.filesDir/invoices/) to the
+    "invoices/" path alias used when constructing content:// URIs.
+
+    No WRITE_EXTERNAL_STORAGE or READ_EXTERNAL_STORAGE permission is
+    needed — sharing is granted via FLAG_GRANT_READ_URI_PERMISSION on
+    the Intent, scoped to the receiving app only.
+-->
+<paths>
+    <!-- context.getFilesDir() → /data/data/<package>/files/ -->
+    <files-path
+        name="invoices"
+        path="invoices/" />
+
+    <!-- context.getCacheDir() — for any temporary PDFs -->
+    <cache-path
+        name="invoice_cache"
+        path="invoices/" />
+</paths>

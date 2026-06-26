@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="5dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <!-- Left accent bar -->
+        <View
+            android:id="@+id/accentBar"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="#1A237E"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Invoice number -->
+        <TextView
+            android:id="@+id/tvInvoiceNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#1A237E"
+            app:layout_constraintStart_toEndOf="@id/accentBar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/chipStatus"
+            tools:text="# INV-2026-0042" />
+
+        <!-- Status chip -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            app:chipMinHeight="24dp"
+            app:layout_constraintEnd_toStartOf="@id/btnPrint"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/tvInvoiceNumber"
+            tools:text="Sent" />
+
+        <!-- Print icon button -->
+        <ImageButton
+            android:id="@+id/btnPrint"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Print invoice"
+            android:src="@drawable/ic_print"
+            app:tint="#5C6BC0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/tvInvoiceNumber" />
+
+        <!-- Customer name -->
+        <TextView
+            android:id="@+id/tvCustomerName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="6dp"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#111827"
+            app:layout_constraintStart_toEndOf="@id/accentBar"
+            app:layout_constraintEnd_toStartOf="@id/tvGrandTotal"
+            app:layout_constraintTop_toBottomOf="@id/tvInvoiceNumber"
+            tools:text="Riya Sharma" />
+
+        <!-- Grand total (right-aligned) -->
+        <TextView
+            android:id="@+id/tvGrandTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#1A237E"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/chipStatus"
+            tools:text="₹ 70,270.00" />
+
+        <!-- Item count -->
+        <TextView
+            android:id="@+id/tvItemCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="3dp"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            app:layout_constraintStart_toEndOf="@id/accentBar"
+            app:layout_constraintEnd_toStartOf="@id/tvDueDate"
+            app:layout_constraintTop_toBottomOf="@id/tvCustomerName"
+            tools:text="3 item(s)" />
+
+        <!-- Due date -->
+        <TextView
+            android:id="@+id/tvDueDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvGrandTotal"
+            tools:text="Due: 11 Jul 2026" />
+
+        <!-- Created date + overdue badge row -->
+        <TextView
+            android:id="@+id/tvCreatedAt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="2dp"
+            android:textSize="11sp"
+            android:textColor="#9CA3AF"
+            app:layout_constraintStart_toEndOf="@id/accentBar"
+            app:layout_constraintEnd_toStartOf="@id/tvOverdue"
+            app:layout_constraintTop_toBottomOf="@id/tvItemCount"
+            tools:text="26 Jun 2026" />
+
+        <!-- Overdue warning badge -->
+        <TextView
+            android:id="@+id/tvOverdue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="⚠ OVERDUE"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="#C62828"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDueDate"
+            tools:visibility="visible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
