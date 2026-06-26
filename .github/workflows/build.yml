@@ -36,7 +36,7 @@ jobs:
       # 🌟 تبدیل شدہ حصہ: اب یہ پرانے پلگ انز کے بغیر بالکل صاف اور نیا اینڈرائیڈ پروجیکٹ بنائے گا
       - name: Create Cordova Project
         run: |
-          cordova create my-app com.arappcreator.halaldar "halaldar"
+          cordova create my-app com.arappcreator.halaldarorder "halaldar order"
           cd my-app
           cordova platform add android --save
 
