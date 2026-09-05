@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.arappcreator.KhataBook" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>Digital Khata</name>
+    <description>Digital Khata Management Mobile Application</description>
+    <author email="support@arappcreator.com" href="https://github.com">Atif Rehman</author>
+    
+    <content src="index.html" />
+    
+    <!-- App Icon -->
+    <icon src="logo.png" />
+    
+    <!-- Access & External Navigation (WhatsApp, Calls, Links) -->
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <allow-intent href="whatsapp:*" />
+    <allow-intent href="intent:*" />
+    
+    <platform name="android">
+        <allow-intent href="market:*" />
+        
+        <!-- Android Permissions (Camera, Storage, Mic, Notifications, WhatsApp Sharing) -->
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <!-- Camera Permission -->
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-feature android:name="android.hardware.camera" android:required="false" />
+            <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
+            <!-- Microphone Permission -->
+            <uses-permission android:name="android.permission.RECORD_AUDIO" />
+            <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+            <!-- Storage & PDF Downloading Permissions -->
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+            <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+            <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+            <!-- Notifications Permission (Android 13+) -->
+            <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+            <uses-permission android:name="android.permission.VIBRATE" />
+
+            <!-- Internet & Network -->
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        </config-file>
+
+        <preference name="AndroidXEnabled" value="true" />
+        <preference name="GradlePluginKotlinEnabled" value="true" />
+    </platform>
+    
+    <!-- App Preferences -->
+    <preference name="ScrollEnabled" value="true" />
+    <preference name="Orientation" value="portrait" />
+    <preference name="Fullscreen" value="false" />
+    <preference name="BackgroundColor" value="#ffffff" />
+</widget>
