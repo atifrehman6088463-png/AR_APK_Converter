@@ -33,12 +33,18 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      # 🌟 تبدیل شدہ حصہ: اب یہ پرانے پلگ انز کے بغیر بالکل صاف اور نیا اینڈرائیڈ پروجیکٹ بنائے گا
-      - name: Create Cordova Project
+      - name: Create Cordova Project & Add Plugins
         run: |
           cordova create my-app com.arappcreator.KhataBook "Khata Book"
           cd my-app
           cordova platform add android --save
+          # Adding Essential Plugins for PDF, Camera, Mic, and Sharing
+          cordova plugin add cordova-plugin-file --save
+          cordova plugin add cordova-plugin-camera --save
+          cordova plugin add cordova-plugin-media-capture --save
+          cordova plugin add cordova-plugin-android-permissions --save
+          cordova plugin add cordova-plugin-x-socialsharing --save
+          cordova plugin add cordova-plugin-whitelist --save
 
       - name: Inject Custom Web Files & Branding
         run: |
