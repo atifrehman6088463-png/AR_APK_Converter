@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Khata App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Day Wood Theme */
+        .theme-wood-day {
+            background-color: #f7f3ed;
+            background-image: radial-gradient(#e2d7c5 1px, transparent 0);
+            background-size: 24px 24px;
+            color: #3e2723;
+        }
+        .theme-wood-day .wood-card {
+            background: #ffffff;
+            border: 2px solid #d7ccc8;
+            box-shadow: 0 4px 6px -1px rgba(62, 39, 35, 0.1);
+        }
+        .theme-wood-day .wood-header {
+            background: linear-gradient(135deg, #5d4037, #3e2723);
+            color: #fff8e1;
+        }
+
+        /* Night Wood Theme */
+        .theme-wood-night {
+            background-color: #1a120b;
+            background-image: radial-gradient(#3c2a21 1px, transparent 0);
+            background-size: 24px 24px;
+            color: #e5d3b3;
+        }
+        .theme-wood-night .wood-card {
+            background: #2b1e16;
+            border: 2px solid #3c2a21;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+        .theme-wood-night .wood-header {
+            background: linear-gradient(135deg, #2b1e16, #1a120b);
+            color: #e5d3b3;
+            border-bottom: 1px solid #3c2a21;
+        }
+        .theme-wood-night input, .theme-wood-night select {
+            background-color: #1a120b !important;
+            color: #e5d3b3 !important;
+            border-color: #3c2a21 !important;
+        }
+
+        /* Print Override */
+        @media print {
+            body * { visibility: hidden; }
+            #receipt-modal-content, #receipt-modal-content * { visibility: visible; }
+            #receipt-modal-content { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="theme-wood-day transition-colors duration-300 min-h-screen flex flex-col font-sans">
+
+    <header class="wood-header px-4 py-3 shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img id="header-logo" src="https://via.placeholder.com/45?text=Logo" alt="Shop Logo" class="w-11 h-11 rounded-full border-2 border-amber-200 object-cover hidden">
+                <h1 id="header-shop-name" class="text-xl md:text-2xl font-bold tracking-wide">Digital Khata</h1>
+            </div>
+
+            <div class="flex items-center gap-2 md:gap-4">
+                <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-amber-50 text-amber-900 font-semibold text-xs md:text-sm px-2 py-1.5 rounded border border-amber-300 outline-none cursor-pointer">
+                    <option value="en">English</option>
+                    <option value="ur">اردو</option>
+                    <option value="hi">हिंदी</option>
+                    <option value="ar">العربية</option>
+                </select>
+                <button onclick="toggleTheme()" class="bg-amber-800 hover:bg-amber-700 text-amber-100 p-2 rounded-full border border-amber-600 transition" title="Switch Theme">
+                    🌙 / ☀️
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6">
+        
+        <div class="flex border-b-2 border-amber-800/20 mb-6 gap-2">
+            <button id="tab-home" onclick="switchMainRoom('home')" class="px-5 py-2.5 font-bold text-sm md:text-base border-b-4 border-amber-700 text-amber-800 dark:text-amber-200 transition">
+                <span data-i18n="nav_home">Home Page</span>
+            </button>
+            <button id="tab-operations" onclick="switchMainRoom('operations')" class="px-5 py-2.5 font-semibold text-sm md:text-base border-b-4 border-transparent text-gray-500 hover:text-amber-700 transition">
+                <span data-i18n="nav_operations">Operations Room</span>
+            </button>
+        </div>
+
+        <section id="room-home" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="wood-card p-5 rounded-xl text-center">
+                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400" data-i18n="total_customers">Total Customers</p>
+                    <h2 id="dash-total-cust" class="text-3xl font-extrabold mt-1">0</h2>
+                </div>
+                <div class="wood-card p-5 rounded-xl text-center">
+                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400" data-i18n="total_receivables">Total Receivables</p>
+                    <h2 id="dash-total-recv" class="text-3xl font-extrabold text-amber-700 dark:text-amber-400 mt-1">0.00</h2>
+                </div>
+                <div class="wood-card p-5 rounded-xl text-center">
+                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400" data-i18n="total_bills">Total Bills Generated</p>
+                    <h2 id="dash-total-bills" class="text-3xl font-extrabold text-emerald-600 mt-1">0</h2>
+                </div>
+            </div>
+
+            <div class="wood-card p-5 rounded-xl">
+                <h3 class="text-lg font-bold mb-4" data-i18n="analytics_title">Sales & Customer Growth Analytics</h3>
+                <div class="relative w-full h-64 md:h-80">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="wood-card p-5 rounded-xl">
+                <h3 class="text-lg font-bold mb-3" data-i18n="recent_ops">Recent Operations</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-300 dark:border-gray-700">
+                                <th class="py-2" data-i18n="tbl_date">Date</th>
+                                <th class="py-2" data-i18n="tbl_customer">Customer</th>
+                                <th class="py-2" data-i18n="tbl_type">Type</th>
+                                <th class="py-2 text-right" data-i18n="tbl_amount">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-recent-list">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="room-operations" class="hidden space-y-6">
+            
+            <div id="ops-menu" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="openSubRoom('add-customer')" class="wood-card p-6 rounded-xl flex flex-col items-center justify-center hover:scale-105 transition group text-center">
+                    <span class="text-3xl mb-2">👤➕</span>
+                    <span class="font-bold text-sm md:text-base group-hover:text-amber-600" data-i18n="op_add_cust">Add New Customer</span>
+                </button>
+                <button onclick="openSubRoom('create-bill')" class="wood-card p-6 rounded-xl flex flex-col items-center justify-center hover:scale-105 transition group text-center">
+                    <span class="text-3xl mb-2">🧾</span>
+                    <span class="font-bold text-sm md:text-base group-hover:text-amber-600" data-i18n="op_create_bill">Create New Bill</span>
+                </button>
+                <button onclick="openSubRoom('customer-room')" class="wood-card p-6 rounded-xl flex flex-col items-center justify-center hover:scale-105 transition group text-center">
+                    <span class="text-3xl mb-2">👥</span>
+                    <span class="font-bold text-sm md:text-base group-hover:text-amber-600" data-i18n="op_cust_room">Customers Room</span>
+                </button>
+                <button onclick="openSubRoom('profile-room')" class="wood-card p-6 rounded-xl flex flex-col items-center justify-center hover:scale-105 transition group text-center">
+                    <span class="text-3xl mb-2">⚙️</span>
+                    <span class="font-bold text-sm md:text-base group-hover:text-amber-600" data-i18n="op_profile">Profile Room</span>
+                </button>
+            </div>
+
+            <div id="sub-add-customer" class="sub-room hidden wood-card p-4 md:p-6 rounded-xl relative">
+                <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-300 dark:border-gray-700">
+                    <h2 class="text-xl font-bold" data-i18n="op_add_cust">Add New Customer</h2>
+                    <button onclick="finalizeNewCustomer()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg shadow transition" data-i18n="btn_finalize">
+                        Finalize & Generate
+                    </button>
+                </div>
+
+                <form id="add-customer-form" onsubmit="event.preventDefault();" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="lbl_name">Customer Name</label>
+                            <input type="text" id="new-cust-name" class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="lbl_phone">Phone Number</label>
+                            <input type="tel" id="new-cust-phone" class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="lbl_date">Date</label>
+                            <input type="date" id="new-cust-date" class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                        </div>
+                    </div>
+
+                    <h3 class="text-md font-bold mt-6 mb-2" data-i18n="opening_bill">Opening Bill Items</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-amber-100 dark:bg-amber-900/30 text-left">
+                                    <th class="p-2" data-i18n="item_name">Item Name</th>
+                                    <th class="p-2 w-24" data-i18n="item_qty">Qty</th>
+                                    <th class="p-2 w-32" data-i18n="item_price">Unit Price</th>
+                                    <th class="p-2 w-32" data-i18n="item_total">Total</th>
+                                    <th class="p-2 w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="new-cust-items">
+                                </tbody>
+                        </table>
+                    </div>
+                    <button type="button" onclick="addItemRow('new-cust-items')" class="bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs px-3 py-1.5 rounded" data-i18n="btn_add_item">
+                        + Add Item
+                    </button>
+
+                    <div class="flex justify-end mt-4 pt-4 border-t border-gray-300 dark:border-gray-700">
+                        <div class="text-right">
+                            <span class="text-sm font-bold" data-i18n="lbl_grand_total">Grand Total: </span>
+                            <span id="new-cust-grand-total" class="text-xl font-black text-amber-700 dark:text-amber-400">0.00</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="sub-create-bill" class="sub-room hidden wood-card p-4 md:p-6 rounded-xl relative">
+                <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-300 dark:border-gray-700">
+                    <h2 class="text-xl font-bold" data-i18n="op_create_bill">Create New Bill</h2>
+                    <button onclick="finalizeNewBill()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg shadow transition" data-i18n="btn_finalize">
+                        Finalize & Generate
+                    </button>
+                </div>
+
+                <form id="create-bill-form" onsubmit="event.preventDefault();" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative">
+                            <label class="block text-xs font-bold mb-1" data-i18n="lbl_select_cust">Customer Name</label>
+                            <input type="text" id="bill-cust-search" oninput="searchCustomerSuggestions(this.value)" autocomplete="off" placeholder="Type customer name..." class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                            <div id="cust-suggestions" class="absolute z-50 left-0 right-0 bg-white dark:bg-stone-800 border rounded shadow-lg hidden max-h-40 overflow-y-auto mt-1"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="lbl_date">Date</label>
+                            <input type="date" id="bill-date" class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                        </div>
+                    </div>
+
+                    <h3 class="text-md font-bold mt-6 mb-2" data-i18n="bill_items">Bill Items</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-amber-100 dark:bg-amber-900/30 text-left">
+                                    <th class="p-2" data-i18n="item_name">Item Name</th>
+                                    <th class="p-2 w-24" data-i18n="item_qty">Qty</th>
+                                    <th class="p-2 w-32" data-i18n="item_price">Unit Price</th>
+                                    <th class="p-2 w-32" data-i18n="item_total">Total</th>
+                                    <th class="p-2 w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="create-bill-items">
+                                </tbody>
+                        </table>
+                    </div>
+                    <button type="button" onclick="addItemRow('create-bill-items')" class="bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs px-3 py-1.5 rounded" data-i18n="btn_add_item">
+                        + Add Item
+                    </button>
+
+                    <div class="flex justify-end mt-4 pt-4 border-t border-gray-300 dark:border-gray-700">
+                        <div class="text-right">
+                            <span class="text-sm font-bold" data-i18n="lbl_grand_total">Grand Total: </span>
+                            <span id="create-bill-grand-total" class="text-xl font-black text-amber-700 dark:text-amber-400">0.00</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="sub-customer-room" class="sub-room hidden space-y-4">
+                <div class="wood-card p-4 rounded-xl">
+                    <h2 class="text-xl font-bold mb-4" data-i18n="op_cust_room">Customers Room</h2>
+                    <div id="customer-list-container" class="divide-y divide-gray-200 dark:divide-gray-700">
+                        </div>
+                </div>
+
+                <div id="customer-statement-view" class="wood-card p-4 md:p-6 rounded-xl hidden space-y-4">
+                    <div class="flex justify-between items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                        <div class="flex items-center gap-2">
+                            <button onclick="downloadStatementPDF()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
+                                📄 PDF
+                            </button>
+                            <button onclick="shareStatementWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded flex items-center gap-1">
+                                💬 WhatsApp
+                            </button>
+                        </div>
+                        <button onclick="closeCustomerStatement()" class="text-gray-500 hover:text-red-500 text-sm font-bold">✕ Close</button>
+                    </div>
+
+                    <div id="statement-print-area" class="p-2">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 id="stmt-cust-name" class="text-2xl font-bold">Customer Name</h2>
+                                <p id="stmt-cust-phone" class="text-sm text-gray-500">Phone</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-bold text-gray-500" data-i18n="total_balance">Total Outstanding Balance</p>
+                                <h3 id="stmt-cust-total" class="text-2xl font-extrabold text-amber-700 dark:text-amber-400">0.00</h3>
+                            </div>
+                        </div>
+
+                        <h4 class="font-bold text-sm mb-2" data-i18n="receipt_history">Receipt History</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="bg-amber-100 dark:bg-amber-900/30 text-left">
+                                        <th class="p-2" data-i18n="receipt_no">Receipt #</th>
+                                        <th class="p-2" data-i18n="tbl_date">Date</th>
+                                        <th class="p-2 text-right" data-i18n="tbl_amount">Amount</th>
+                                        <th class="p-2 text-center" data-i18n="action">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stmt-receipts-list">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sub-profile-room" class="sub-room hidden wood-card p-4 md:p-6 rounded-xl space-y-6">
+                <h2 class="text-xl font-bold border-b pb-2 border-gray-300 dark:border-gray-700" data-i18n="op_profile">Profile Settings</h2>
+                
+                <form id="profile-form" onsubmit="saveProfile(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="shop_logo">Shop Logo / Picture</label>
+                            <input type="file" id="profile-logo-input" accept="image/*" class="w-full text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="shop_name">Shop Name</label>
+                            <input type="text" id="profile-shop-name" class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="lbl_phone">Mobile Number</label>
+                            <input type="tel" id="profile-mobile" class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold mb-1" data-i18n="currency">Currency Symbol</label>
+                            <input type="text" id="profile-currency" placeholder="e.g. $, PKR, AED, ₹" class="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-amber-500" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-amber-800 hover:bg-amber-900 text-white font-bold px-6 py-2 rounded shadow" data-i18n="btn_save_profile">
+                        Save Profile
+                    </button>
+                </form>
+
+                <hr class="border-gray-300 dark:border-gray-700">
+
+                <div class="space-y-3">
+                    <h3 class="text-md font-bold" data-i18n="data_management">Data Management</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="downloadBackup()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded flex items-center gap-1">
+                            📥 <span data-i18n="btn_download_backup">Download Backup</span>
+                        </button>
+                        <label class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 rounded cursor-pointer flex items-center gap-1">
+                            📤 <span data-i18n="btn_upload_backup">Upload Backup</span>
+                            <input type="file" id="backup-file-input" onchange="uploadBackup(event)" accept=".json" class="hidden">
+                        </label>
+                        <button onclick="resetAllData()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 rounded flex items-center gap-1">
+                            ⚠️ <span data-i18n="btn_reset_data">Reset All Data</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <div id="receipt-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3">
+        <div class="wood-card w-full max-w-md rounded-xl p-4 md:p-6 space-y-4 max-h-[90vh] overflow-y-auto relative">
+            <div class="flex justify-between items-center border-b pb-2 border-gray-300 dark:border-gray-700">
+                <h3 class="font-bold text-lg" data-i18n="receipt_receipt">Receipt</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="downloadReceiptPDF()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-2.5 py-1 rounded">📄 PDF</button>
+                    <button onclick="shareReceiptWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-2.5 py-1 rounded">💬 WhatsApp</button>
+                    <button onclick="closeReceiptModal()" class="text-gray-500 hover:text-red-500 font-bold ml-2">✕</button>
+                </div>
+            </div>
+
+            <div id="receipt-modal-content" class="p-4 bg-white text-black rounded border border-gray-200 text-sm space-y-4">
+                <div class="text-center border-b pb-3">
+                    <img id="rcpt-shop-logo" src="" alt="" class="w-12 h-12 rounded-full mx-auto mb-1 hidden object-cover">
+                    <h2 id="rcpt-shop-name" class="font-bold text-base uppercase tracking-wider">SHOP NAME</h2>
+                    <p id="rcpt-shop-phone" class="text-xs text-gray-600">Mobile: -</p>
+                </div>
+
+                <div class="flex justify-between text-xs">
+                    <div>
+                        <p><strong>Customer:</strong> <span id="rcpt-cust-name">-</span></p>
+                        <p><strong>Phone:</strong> <span id="rcpt-cust-phone">-</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p><strong>Receipt #:</strong> <span id="rcpt-id">-</span></p>
+                        <p><strong>Date:</strong> <span id="rcpt-date">-</span></p>
+                    </div>
+                </div>
+
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-t border-gray-300">
+                            <th class="py-1">Item</th>
+                            <th class="py-1 text-center">Qty</th>
+                            <th class="py-1 text-right">Price</th>
+                            <th class="py-1 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rcpt-items-list">
+                        </tbody>
+                </table>
+
+                <div class="border-t pt-2 text-right">
+                    <p class="text-sm font-bold">Grand Total: <span id="rcpt-grand-total">0.00</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TRANSLATIONS DICTIONARY
+        const i18n = {
+            en: {
+                nav_home: "Home Page",
+                nav_operations: "Operations Room",
+                total_customers: "Total Customers",
+                total_receivables: "Total Receivables",
+                total_bills: "Total Bills Generated",
+                analytics_title: "Sales Analytics",
+                recent_ops: "Recent Operations",
+                tbl_date: "Date",
+                tbl_customer: "Customer",
+                tbl_type: "Type",
+                tbl_amount: "Amount",
+                op_add_cust: "Add New Customer",
+                op_create_bill: "Create New Bill",
+                op_cust_room: "Customers Room",
+                op_profile: "Profile Room",
+                btn_finalize: "Finalize & Generate",
+                lbl_name: "Customer Name",
+                lbl_phone: "Phone Number",
+                lbl_date: "Date",
+                opening_bill: "Opening Bill Items",
+                item_name: "Item Name",
+                item_qty: "Qty",
+                item_price: "Unit Price",
+                item_total: "Total",
+                btn_add_item: "+ Add Item",
+                lbl_grand_total: "Grand Total: ",
+                lbl_select_cust: "Customer Name (Auto-Suggest)",
+                bill_items: "Bill Items",
+                total_balance: "Total Outstanding Balance",
+                receipt_history: "Receipt History",
+                receipt_no: "Receipt #",
+                action: "Action",
+                shop_logo: "Shop Logo / Picture",
+                shop_name: "Shop Name",
+                currency: "Currency Symbol",
+                btn_save_profile: "Save Profile",
+                data_management: "Data Management & Reset",
+                btn_download_backup: "Download Backup",
+                btn_upload_backup: "Upload Backup",
+                btn_reset_data: "Reset All Data",
+                receipt_receipt: "Bill Receipt"
+            },
+            ur: {
+                nav_home: "ہوم پیج",
+                nav_operations: "آپریشنز روم",
+                total_customers: "کل کسٹمرز",
+                total_receivables: "کل واجب الادا رقم",
+                total_bills: "کل بلز",
+                analytics_title: "فروخت کے اعداد و شمار",
+                recent_ops: "حالیہ لیں دین",
+                tbl_date: "تاریخ",
+                tbl_customer: "کسٹمر",
+                tbl_type: "قسم",
+                tbl_amount: "رقم",
+                op_add_cust: "نیا کسٹمر شامل کریں",
+                op_create_bill: "نیا بل بنائیں",
+                op_cust_room: "کسٹمرز روم",
+                op_profile: "پروفائل روم",
+                btn_finalize: "بل مکمل کریں",
+                lbl_name: "کسٹمر کا نام",
+                lbl_phone: "فون نمبر",
+                lbl_date: "تاریخ",
+                opening_bill: "ابتدائی بل کی اشیاء",
+                item_name: "سامان کا نام",
+                item_qty: "تعداد",
+                item_price: "فی قیمت",
+                item_total: "کل قیمت",
+                btn_add_item: "+ مزید اشیاء شامل کریں",
+                lbl_grand_total: "کل رقم: ",
+                lbl_select_cust: "کسٹمر کا نام منتخب کریں",
+                bill_items: "بل کی اشیاء",
+                total_balance: "کل باقایا رقم",
+                receipt_history: "رسید ہسٹری",
+                receipt_no: "رسید نمبر",
+                action: "ایکشن",
+                shop_logo: "دکان کا لوگو / تصویر",
+                shop_name: "دکان کا نام",
+                currency: "کرنسی کی علامت",
+                btn_save_profile: "پروفائل محفوظ کریں",
+                data_management: "ڈیٹا بیک اپ اور ری سیٹ",
+                btn_download_backup: "بیک اپ ڈاؤن لوڈ کریں",
+                btn_upload_backup: "بیک اپ اپ لوڈ کریں",
+                btn_reset_data: "تمام ڈیٹا ری سیٹ کریں",
+                receipt_receipt: "بل کی رسید"
+            },
+            hi: {
+                nav_home: "होम पेज",
+                nav_operations: "ऑपरेशन रूम",
+                total_customers: "कुल ग्राहक",
+                total_receivables: "कुल बकाया",
+                total_bills: "कुल बिल",
+                analytics_title: "बिक्री का विश्लेषण",
+                recent_ops: "हाल के लेनदेन",
+                tbl_date: "तिथि",
+                tbl_customer: "ग्राहक",
+                tbl_type: "प्रकार",
+                tbl_amount: "राशि",
+                op_add_cust: "नया ग्राहक जोड़ें",
+                op_create_bill: "नया बिल बनाएं",
+                op_cust_room: "ग्राहक रूम",
+                op_profile: "प्रोफाइल रूम",
+                btn_finalize: "बिल जनरेट करें",
+                lbl_name: "ग्राहक का नाम",
+                lbl_phone: "फोन नंबर",
+                lbl_date: "तिथि",
+                opening_bill: "प्रारंभिक बिल आइटम",
+                item_name: "वस्तु का नाम",
+                item_qty: "मात्रा",
+                item_price: "इकाई मूल्य",
+                item_total: "कुल",
+                btn_add_item: "+ आइटम जोड़ें",
+                lbl_grand_total: "कुल योग: ",
+                lbl_select_cust: "ग्राहक का नाम चुनें",
+                bill_items: "बिल आइटम",
+                total_balance: "कुल बकाया राशि",
+                receipt_history: "रसीद इतिहास",
+                receipt_no: "रसीद सं.",
+                action: "कार्रवाई",
+                shop_logo: "दुकान का लोगो / चित्र",
+                shop_name: "दुकान का नाम",
+                currency: "मुद्रा प्रतीक",
+                btn_save_profile: "प्रोफ़ाइल सहेजें",
+                data_management: "डेटा बैकअप और रीसेट",
+                btn_download_backup: "बैकअप डाउनलोड करें",
+                btn_upload_backup: "बैकअप अपलोड करें",
+                btn_reset_data: "सभी डेटा रीसेट करें",
+                receipt_receipt: "बिल रसीद"
+            },
+            ar: {
+                nav_home: "الصفحة الرئيسية",
+                nav_operations: "غرفة العمليات",
+                total_customers: "إجمالي العملاء",
+                total_receivables: "إجمالي المستحقات",
+                total_bills: "إجمالي الفواتير",
+                analytics_title: "تحليلات المبيعات",
+                recent_ops: "العمليات الأخيرة",
+                tbl_date: "التاريخ",
+                tbl_customer: "العميل",
+                tbl_type: "النوع",
+                tbl_amount: "المبلغ",
+                op_add_cust: "إضافة عميل جديد",
+                op_create_bill: "إنشاء فاتورة جديدة",
+                op_cust_room: "غرفة العملاء",
+                op_profile: "غرفة الملف الشخصي",
+                btn_finalize: "إنهاء وإنشاء",
+                lbl_name: "اسم العميل",
+                lbl_phone: "رقم الهاتف",
+                lbl_date: "التاريخ",
+                opening_bill: "عناصر الفاتورة الأولية",
+                item_name: "اسم المنتج",
+                item_qty: "الكمية",
+                item_price: "سعر الوحدة",
+                item_total: "الإجمالي",
+                btn_add_item: "+ إضافة عنصر",
+                lbl_grand_total: "المبلغ الإجمالي: ",
+                lbl_select_cust: "اختر اسم العميل",
+                bill_items: "عناصر الفاتورة",
+                total_balance: "إجمالي الرصيد المتبقي",
+                receipt_history: "سجل الإيصالات",
+                receipt_no: "رقم الإيصال",
+                action: "الإجراء",
+                shop_logo: "شعار / صورة المحل",
+                shop_name: "اسم المحل",
+                currency: "رمز العملة",
+                btn_save_profile: "حفظ الملف الشخصي",
+                data_management: "إدارة البيانات وإعادة الضبط",
+                btn_download_backup: "تحميل النسخة الاحتياطية",
+                btn_upload_backup: "رفع النسخة الاحتياطية",
+                btn_reset_data: "إعادة ضبط كافة البيانات",
+                receipt_receipt: "إيصال الفاتورة"
+            }
+        };
+
+        // GLOBAL APP STATE
+        let appState = {
+            lang: 'en',
+            theme: 'day',
+            profile: {
+                name: 'My Shop',
+                phone: '',
+                currency: '$',
+                logo: ''
+            },
+            customers: [], // { id, name, phone, date, totalBalance, receipts: [] }
+            receipts: []   // { id, customerId, customerName, date, items: [], total }
+        };
+
+        let currentActiveReceipt = null;
+        let chartInstance = null;
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            applyLanguage(appState.lang);
+            applyTheme(appState.theme);
+            renderDashboard();
+            initChart();
+            
+            // Set default date inputs to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('new-cust-date').value = today;
+            document.getElementById('bill-date').value = today;
+
+            // Pre-seed item row in Add Customer
+            addItemRow('new-cust-items');
+            addItemRow('create-bill-items');
+        });
+
+        // PERSISTENCE
+        function saveToLocalStorage() {
+            localStorage.setItem('digital_khata_state', JSON.stringify(appState));
+        }
+
+        function loadFromLocalStorage() {
+            const data = localStorage.getItem('digital_khata_state');
+            if (data) {
+                try {
+                    appState = JSON.parse(data);
+                } catch(e) {
+                    console.error("Error loading app state", e);
+                }
+            }
+            // Populate profile fields
+            document.getElementById('profile-shop-name').value = appState.profile.name || '';
+            document.getElementById('profile-mobile').value = appState.profile.phone || '';
+            document.getElementById('profile-currency').value = appState.profile.currency || '$';
+            updateHeaderProfile();
+        }
+
+        // LANGUAGE TRANSLATION
+        function changeLanguage(langKey) {
+            appState.lang = langKey;
+            applyLanguage(langKey);
+            saveToLocalStorage();
+        }
+
+        function applyLanguage(langKey) {
+            document.getElementById('lang-select').value = langKey;
+            document.documentElement.dir = (langKey === 'ur' || langKey === 'ar') ? 'rtl' : 'ltr';
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[langKey] && i18n[langKey][key]) {
+                    el.innerText = i18n[langKey][key];
+                }
+            });
+        }
+
+        // THEME MANAGEMENT
+        function toggleTheme() {
+            appState.theme = (appState.theme === 'day') ? 'night' : 'day';
+            applyTheme(appState.theme);
+            saveToLocalStorage();
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'night') {
+                document.body.classList.remove('theme-wood-day');
+                document.body.classList.add('theme-wood-night');
+            } else {
+                document.body.classList.remove('theme-wood-night');
+                document.body.classList.add('theme-wood-day');
+            }
+        }
+
+        // ROOM NAVIGATION
+        function switchMainRoom(roomName) {
+            document.getElementById('room-home').classList.add('hidden');
+            document.getElementById('room-operations').classList.add('hidden');
+            
+            document.getElementById('tab-home').className = "px-5 py-2.5 font-semibold text-sm md:text-base border-b-4 border-transparent text-gray-500 hover:text-amber-700 transition";
+            document.getElementById('tab-operations').className = "px-5 py-2.5 font-semibold text-sm md:text-base border-b-4 border-transparent text-gray-500 hover:text-amber-700 transition";
+
+            if (roomName === 'home') {
+                document.getElementById('room-home').classList.remove('hidden');
+                document.getElementById('tab-home').className = "px-5 py-2.5 font-bold text-sm md:text-base border-b-4 border-amber-700 text-amber-800 dark:text-amber-200 transition";
+                renderDashboard();
+            } else {
+                document.getElementById('room-operations').classList.remove('hidden');
+                document.getElementById('tab-operations').className = "px-5 py-2.5 font-bold text-sm md:text-base border-b-4 border-amber-700 text-amber-800 dark:text-amber-200 transition";
+            }
+        }
+
+        function openSubRoom(subRoomId) {
+            document.querySelectorAll('.sub-room').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`sub-${subRoomId}`);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+
+            if(subRoomId === 'customer-room') {
+                renderCustomerList();
+                document.getElementById('customer-statement-view').classList.add('hidden');
+            }
+        }
+
+        // DYNAMIC DYNAMIC ITEM ROW MANAGEMENT
+        function addItemRow(tbodyId) {
+            const tbody = document.getElementById(tbodyId);
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-gray-200 dark:border-gray-700";
+            tr.innerHTML = `
+                <td class="p-1.5"><input type="text" placeholder="Product" class="item-name w-full p-1 border rounded text-sm" required></td>
+                <td class="p-1.5"><input type="number" min="1" value="1" oninput="calculateRowTotal(this)" class="item-qty w-full p-1 border rounded text-sm" required></td>
+                <td class="p-1.5"><input type="number" min="0" step="0.01" value="0.00" oninput="calculateRowTotal(this)" class="item-price w-full p-1 border rounded text-sm" required></td>
+                <td class="p-1.5"><input type="text" readonly value="0.00" class="item-total w-full p-1 border rounded text-sm font-bold bg-gray-100 dark:bg-stone-800"></td>
+                <td class="p-1.5 text-center"><button type="button" onclick="removeRow(this, '${tbodyId}')" class="text-red-500 font-bold hover:text-red-700">✕</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function removeRow(btn, tbodyId) {
+            const tbody = document.getElementById(tbodyId);
+            if (tbody.children.length > 1) {
+                btn.closest('tr').remove();
+                calculateGrandTotal(tbodyId);
+            }
+        }
+
+        function calculateRowTotal(input) {
+            const row = input.closest('tr');
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const total = qty * price;
+            row.querySelector('.item-total').value = total.toFixed(2);
+            calculateGrandTotal(row.closest('tbody').id);
+        }
+
+        function calculateGrandTotal(tbodyId) {
+            const tbody = document.getElementById(tbodyId);
+            let grandTotal = 0;
+            tbody.querySelectorAll('.item-total').forEach(input => {
+                grandTotal += parseFloat(input.value) || 0;
+            });
+
+            if (tbodyId === 'new-cust-items') {
+                document.getElementById('new-cust-grand-total').innerText = `${appState.profile.currency} ${grandTotal.toFixed(2)}`;
+            } else if (tbodyId === 'create-bill-items') {
+                document.getElementById('create-bill-grand-total').innerText = `${appState.profile.currency} ${grandTotal.toFixed(2)}`;
+            }
+            return grandTotal;
+        }
+
+        function extractItemsFromTbody(tbodyId) {
+            const items = [];
+            const rows = document.getElementById(tbodyId).querySelectorAll('tr');
+            rows.forEach(row => {
+                const name = row.querySelector('.item-name').value;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const total = parseFloat(row.querySelector('.item-total').value) || 0;
+                if (name.trim() !== '') {
+                    items.push({ name, qty, price, total });
+                }
+            });
+            return items;
+        }
+
+        // ROOM 2.1: FINALIZE NEW CUSTOMER
+        function finalizeNewCustomer() {
+            const name = document.getElementById('new-cust-name').value.trim();
+            const phone = document.getElementById('new-cust-phone').value.trim();
+            const date = document.getElementById('new-cust-date').value;
+            const items = extractItemsFromTbody('new-cust-items');
+
+            if (!name || !phone || !date) {
+                alert('Please fill out Customer Name, Phone, and Date.');
+                return;
+            }
+            if (items.length === 0) {
+                alert('Please enter at least one item.');
+                return;
+            }
+
+            const custId = 'CUST-' + Date.now();
+            const receiptId = 'REC-' + Math.floor(1000 + Math.random() * 9000);
+            const total = items.reduce((sum, item) => sum + item.total, 0);
+
+            const receiptObj = { id: receiptId, customerId: custId, customerName: name, date, items, total };
+            const newCustomer = {
+                id: custId,
+                name,
+                phone,
+                date,
+                totalBalance: total,
+                receipts: [receiptObj]
+            };
+
+            appState.customers.push(newCustomer);
+            appState.receipts.push(receiptObj);
+            saveToLocalStorage();
+
+            // Clear form
+            document.getElementById('add-customer-form').reset();
+            document.getElementById('new-cust-items').innerHTML = '';
+            addItemRow('new-cust-items');
+            calculateGrandTotal('new-cust-items');
+
+            // Open Receipt Modal
+            showReceipt(receiptObj);
+        }
+
+        // ROOM 2.2: CREATE NEW BILL
+        function searchCustomerSuggestions(val) {
+            const container = document.getElementById('cust-suggestions');
+            container.innerHTML = '';
+            if (!val.trim()) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            const matches = appState.customers.filter(c => c.name.toLowerCase().includes(val.toLowerCase()));
+            if (matches.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            matches.forEach(c => {
+                const div = document.createElement('div');
+                div.className = "p-2 hover:bg-amber-100 dark:hover:bg-amber-900 cursor-pointer text-sm border-b border-gray-100 dark:border-gray-700";
+                div.innerText = `${c.name} (${c.phone})`;
+                div.onclick = () => {
+                    document.getElementById('bill-cust-search').value = c.name;
+                    document.getElementById('bill-cust-search').dataset.selectedId = c.id;
+                    container.classList.add('hidden');
+                };
+                container.appendChild(div);
+            });
+            container.classList.remove('hidden');
+        }
+
+        function finalizeNewBill() {
+            const nameInput = document.getElementById('bill-cust-search');
+            const custName = nameInput.value.trim();
+            const date = document.getElementById('bill-date').value;
+            const items = extractItemsFromTbody('create-bill-items');
+
+            if (!custName || !date) {
+                alert('Please select a customer and date.');
+                return;
+            }
+            if (items.length === 0) {
+                alert('Please enter at least one item.');
+                return;
+            }
+
+            let customer = appState.customers.find(c => c.id === nameInput.dataset.selectedId || c.name.toLowerCase() === custName.toLowerCase());
+            
+            if (!customer) {
+                alert('Customer not found. Please choose an existing customer or add them in "Add New Customer" room.');
+                return;
+            }
+
+            const receiptId = 'REC-' + Math.floor(1000 + Math.random() * 9000);
+            const total = items.reduce((sum, item) => sum + item.total, 0);
+
+            const receiptObj = { id: receiptId, customerId: customer.id, customerName: customer.name, date, items, total };
+
+            customer.receipts.push(receiptObj);
+            customer.totalBalance += total;
+            appState.receipts.push(receiptObj);
+            saveToLocalStorage();
+
+            // Clear Form
+            document.getElementById('create-bill-form').reset();
+            delete nameInput.dataset.selectedId;
+            document.getElementById('create-bill-items').innerHTML = '';
+            addItemRow('create-bill-items');
+            calculateGrandTotal('create-bill-items');
+
+            // Show Receipt Modal
+            showReceipt(receiptObj);
+        }
+
+        // ROOM 2.3: CUSTOMERS ROOM
+        function renderCustomerList() {
+            const container = document.getElementById('customer-list-container');
+            container.innerHTML = '';
+
+            if (appState.customers.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-500 py-4 text-center">No customers added yet.</p>`;
+                return;
+            }
+
+            appState.customers.forEach(c => {
+                const div = document.createElement('div');
+                div.className = "py-3 flex justify-between items-center hover:bg-amber-500/10 px-2 rounded cursor-pointer transition";
+                div.onclick = () => openCustomerStatement(c.id);
+                div.innerHTML = `
+                    <div>
+                        <h4 class="font-bold text-base">${c.name}</h4>
+                        <p class="text-xs text-gray-500">${c.phone}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-extrabold text-amber-700 dark:text-amber-400">${appState.profile.currency} ${c.totalBalance.toFixed(2)}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function openCustomerStatement(custId) {
+            const customer = appState.customers.find(c => c.id === custId);
+            if (!customer) return;
+
+            document.getElementById('customer-statement-view').dataset.currentCustId = custId;
+            document.getElementById('stmt-cust-name').innerText = customer.name;
+            document.getElementById('stmt-cust-phone').innerText = `Phone: ${customer.phone}`;
+            document.getElementById('stmt-cust-total').innerText = `${appState.profile.currency} ${customer.totalBalance.toFixed(2)}`;
+
+            const list = document.getElementById('stmt-receipts-list');
+            list.innerHTML = '';
+
+            customer.receipts.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-200 dark:border-gray-700";
+                tr.innerHTML = `
+                    <td class="p-2 font-semibold">${r.id}</td>
+                    <td class="p-2">${r.date}</td>
+                    <td class="p-2 text-right font-bold">${appState.profile.currency} ${r.total.toFixed(2)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick='showReceiptById("${r.id}")' class="bg-amber-700 hover:bg-amber-800 text-white text-xs px-2 py-1 rounded">View</button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+
+            document.getElementById('customer-statement-view').classList.remove('hidden');
+        }
+
+        function closeCustomerStatement() {
+            document.getElementById('customer-statement-view').classList.add('hidden');
+        }
+
+        function downloadStatementPDF() {
+            const element = document.getElementById('statement-print-area');
+            const opt = { margin: 0.5, filename: 'customer_statement.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function shareStatementWhatsApp() {
+            const custId = document.getElementById('customer-statement-view').dataset.currentCustId;
+            const customer = appState.customers.find(c => c.id === custId);
+            if (!customer) return;
+
+            const text = `*Statement for ${customer.name}*\nTotal Balance: ${appState.profile.currency} ${customer.totalBalance.toFixed(2)}\nThank you for doing business with us!`;
+            window.open(`https://api.whatsapp.com/send?phone=${customer.phone}&text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // ROOM 2.4: PROFILE ROOM
+        function saveProfile(e) {
+            e.preventDefault();
+            appState.profile.name = document.getElementById('profile-shop-name').value;
+            appState.profile.phone = document.getElementById('profile-mobile').value;
+            appState.profile.currency = document.getElementById('profile-currency').value;
+
+            const fileInput = document.getElementById('profile-logo-input');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    appState.profile.logo = evt.target.result;
+                    updateHeaderProfile();
+                    saveToLocalStorage();
+                    alert('Profile Saved Successfully!');
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                updateHeaderProfile();
+                saveToLocalStorage();
+                alert('Profile Saved Successfully!');
+            }
+        }
+
+        function updateHeaderProfile() {
+            document.getElementById('header-shop-name').innerText = appState.profile.name || 'Digital Khata';
+            const logoImg = document.getElementById('header-logo');
+            if (appState.profile.logo) {
+                logoImg.src = appState.profile.logo;
+                logoImg.classList.remove('hidden');
+            } else {
+                logoImg.classList.add('hidden');
+            }
+        }
+
+        function downloadBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `khata_backup_${new Date().toISOString().split('T')[0]}.json`);
+            dlAnchorElem.click();
+        }
+
+        function uploadBackup(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function (e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && parsed.customers && parsed.profile) {
+                        appState = parsed;
+                        saveToLocalStorage();
+                        location.reload();
+                    } else {
+                        alert('Invalid backup file structure.');
+                    }
+                } catch (err) {
+                    alert('Failed to parse backup JSON file.');
+                }
+            };
+            if(event.target.files[0]) {
+                fileReader.readAsText(event.target.files[0]);
+            }
+        }
+
+        function resetAllData() {
+            const code = prompt("Security Lock: Enter code 1234 to reset all app data:");
+            if (code === "1234") {
+                localStorage.removeItem('digital_khata_state');
+                location.reload();
+            } else if (code !== null) {
+                alert("Incorrect security code! Reset cancelled.");
+            }
+        }
+
+        // RECEIPT MODAL & ACTIONS
+        function showReceipt(receiptObj) {
+            currentActiveReceipt = receiptObj;
+            
+            document.getElementById('rcpt-shop-name').innerText = appState.profile.name || 'SHOP NAME';
+            document.getElementById('rcpt-shop-phone').innerText = `Mobile: ${appState.profile.phone || '-'}`;
+            
+            const logoImg = document.getElementById('rcpt-shop-logo');
+            if (appState.profile.logo) {
+                logoImg.src = appState.profile.logo;
+                logoImg.classList.remove('hidden');
+            } else {
+                logoImg.classList.add('hidden');
+            }
+
+            document.getElementById('rcpt-cust-name').innerText = receiptObj.customerName;
+            
+            const custObj = appState.customers.find(c => c.id === receiptObj.customerId);
+            document.getElementById('rcpt-cust-phone').innerText = custObj ? custObj.phone : '-';
+
+            document.getElementById('rcpt-id').innerText = receiptObj.id;
+            document.getElementById('rcpt-date').innerText = receiptObj.date;
+
+            const itemsTbody = document.getElementById('rcpt-items-list');
+            itemsTbody.innerHTML = '';
+            receiptObj.items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-100";
+                tr.innerHTML = `
+                    <td class="py-1">${item.name}</td>
+                    <td class="py-1 text-center">${item.qty}</td>
+                    <td class="py-1 text-right">${appState.profile.currency} ${item.price.toFixed(2)}</td>
+                    <td class="py-1 text-right">${appState.profile.currency} ${item.total.toFixed(2)}</td>
+                `;
+                itemsTbody.appendChild(tr);
+            });
+
+            document.getElementById('rcpt-grand-total').innerText = `${appState.profile.currency} ${receiptObj.total.toFixed(2)}`;
+
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        }
+
+        function showReceiptById(receiptId) {
+            const receiptObj = appState.receipts.find(r => r.id === receiptId);
+            if (receiptObj) {
+                showReceipt(receiptObj);
+            }
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receipt-modal').classList.add('hidden');
+        }
+
+        function downloadReceiptPDF() {
+            const element = document.getElementById('receipt-modal-content');
+            const opt = { margin: 0.2, filename: `Receipt_${currentActiveReceipt.id}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a5', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function shareReceiptWhatsApp() {
+            if (!currentActiveReceipt) return;
+            const custObj = appState.customers.find(c => c.id === currentActiveReceipt.customerId);
+            const phone = custObj ? custObj.phone : '';
+
+            let itemSummary = currentActiveReceipt.items.map(i => `${i.name} (x${i.qty}): ${appState.profile.currency}${i.total.toFixed(2)}`).join('\n');
+            const text = `*Receipt from ${appState.profile.name}*\nReceipt ID: ${currentActiveReceipt.id}\nDate: ${currentActiveReceipt.date}\n---\n${itemSummary}\n---\n*Total: ${appState.profile.currency}${currentActiveReceipt.total.toFixed(2)}*\nThank you!`;
+
+            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // HOME DASHBOARD & ANALYTICS
+        function renderDashboard() {
+            document.getElementById('dash-total-cust').innerText = appState.customers.length;
+            
+            const totalRecv = appState.customers.reduce((sum, c) => sum + c.totalBalance, 0);
+            document.getElementById('dash-total-recv').innerText = `${appState.profile.currency} ${totalRecv.toFixed(2)}`;
+
+            document.getElementById('dash-total-bills').innerText = appState.receipts.length;
+
+            const recentTbody = document.getElementById('dash-recent-list');
+            recentTbody.innerHTML = '';
+            
+            const recent = [...appState.receipts].reverse().slice(0, 5);
+            if(recent.length === 0) {
+                recentTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">No operations recorded yet.</td></tr>`;
+            } else {
+                recent.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-200 dark:border-gray-700";
+                    tr.innerHTML = `
+                        <td class="py-2">${r.date}</td>
+                        <td class="py-2 font-semibold">${r.customerName}</td>
+                        <td class="py-2"><span class="bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 text-xs px-2 py-0.5 rounded">Bill</span></td>
+                        <td class="py-2 text-right font-bold">${appState.profile.currency} ${r.total.toFixed(2)}</td>
+                    `;
+                    recentTbody.appendChild(tr);
+                });
+            }
+
+            if (chartInstance) {
+                updateChartData();
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Total Sales Revenue',
+                        data: new Array(12).fill(0),
+                        backgroundColor: '#b45309',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#888' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#888' } },
+                        y: { ticks: { color: '#888' }, beginAtZero: true }
+                    }
+                }
+            });
+            updateChartData();
+        }
+
+        function updateChartData() {
+            if (!chartInstance) return;
+            const monthlySums = new Array(12).fill(0);
+
+            appState.receipts.forEach(r => {
+                if (r.date) {
+                    const month = new Date(r.date).getMonth();
+                    if (!isNaN(month)) {
+                        monthlySums[month] += r.total;
+                    }
+                }
+            });
+
+            chartInstance.data.datasets[0].data = monthlySums;
+            chartInstance.update();
+        }
+    </script>
+</body>
+</html>
